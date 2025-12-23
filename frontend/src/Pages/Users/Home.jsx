@@ -10,12 +10,21 @@ import {
   useSensor,
   useSensors 
 } from '@dnd-kit/core'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import React, { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import SingleTask from './SingleTask'
 import { useStore } from 'zustand'
 import { userStore } from '@/store/userStore'
 import { toast } from 'sonner'
+import { useLeaveWorkshopHook } from '@/hooks/workshopHook'
 
 const Home = () => {
   const workshop = workshopStore((state) => state.workshop)
@@ -73,19 +82,51 @@ const Home = () => {
     )
   }
 
+  const {mutate:leaveWorkshop} = useLeaveWorkshopHook()
+
+  const leaveWorkshopHandler=()=>{
+    leaveWorkshop(workshop._id)
+  }
   return (
    
     
       <div className="h-full w-[80%] flex flex-col">
         {/* Header Section */}
-        <div className="px-8 py-6 border-b border-slate-200 bg-white">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+       
+         <div className="px-8 py-6 border-b border-slate-200 bg-white flex items-center justify-between">
+         <div>
+           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             {workshop?.name || 'Project Board'}
           </h1>
           <p className="text-sm text-slate-500 mt-1 font-medium">
             Manage your tasks across different stages
           </p>
+         </div>
+          
+      {
+        workshop&&(
+           <Dialog>
+  <DialogTrigger>
+     
+     <p className='text-xs text-red-500 cursor-pointer font-medium' >Leave workshop</p>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Do you reall want to leave?</DialogTitle>
+      <DialogDescription className='flex flex-col'>
+        This action cannot be undone. This will permanently delete your account
+        and remove your data from our servers.
+        <button onClick={leaveWorkshopHandler} className='px-3 py-2 mt-5 rounded-md bg-zinc-900 text-white'>
+          Remove
+        </button>
+      </DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>
+        )
+      }
         </div>
+      
 
         {/* Board Section with DND */}
         <DndContext 

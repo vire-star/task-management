@@ -1,4 +1,4 @@
-import { acceptInvitationApi, getAllWorkShopApi } from '@/Api/workshop.api'
+import { acceptInvitationApi, getAllWorkShopApi, leaveWorkshopApi } from '@/Api/workshop.api'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -28,3 +28,19 @@ export const useAcceptInvitation=()=>{
 
     })
 }
+
+
+export const useLeaveWorkshopHook =()=>{
+    return useMutation({
+        mutationFn:(id)=>leaveWorkshopApi(id),
+        onSuccess:(data)=>{
+            toast.success(data.message)
+        },
+
+        onError:(err)=>{
+            toast.error(err.response?.data?.message)
+        }
+
+    })
+}
+

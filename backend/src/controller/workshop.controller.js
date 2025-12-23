@@ -320,7 +320,7 @@ export const leaveWorkshop = async (req, res) => {
     // Owner cannot leave
     if (workshop.ownerId.toString() === userId) {
       return res.status(400).json({
-        message: "Owner cannot leave workshop. Delete or transfer ownership.",
+        message: "Owner cannot leave workshop.",
       });
     }
 

@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Bell, LayoutDashboard, Settings } from "lucide-react";
+import { Bell, File, LayoutDashboard, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Notification from "./Notification";
 
@@ -137,6 +137,11 @@ const Sidebar = () => {
           </p>
 
           <Notification/>
+
+          <p className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start  gap-2 cursor-pointer">
+            <File size={15}/> My files
+
+          </p>
           
         </div>
 

@@ -22,3 +22,14 @@ export const acceptInvitationApi = async(id)=>{
 
     return res.data
 }
+export const leaveWorkshopApi = async(id)=>{
+    const res = await axios.delete(`${BaseUrl}/workshop/leaveWorkshop/${id}`,
+       
+        {
+            headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}
