@@ -1,7 +1,7 @@
 import { Spinner } from "@/components/ui/spinner"
 import { useGetUserHook } from "@/hooks/userHooks"
 import { userStore } from "@/store/userStore"
-import { useEffect } from "react"
+
 import { Navigate } from "react-router-dom"
 
 export const ProtectRoute  =({children})=>{
@@ -14,6 +14,7 @@ export const ProtectRoute  =({children})=>{
     if(data){
         setUser(data)
     }
+
     // useEffect((data)=>{
     //     setUser(data)
     // },[data,setUser])
