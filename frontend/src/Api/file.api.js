@@ -11,3 +11,13 @@ export const getSpeceficFileApi = async(id)=>{
 
     return res.data
 }
+export const getPrivateFileApi = async()=>{
+    const res = await axios.get(`${BaseUrl}/file/getPrivateFile`,
+        {
+            headers:{'Content-Type':"Application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}
