@@ -140,7 +140,7 @@ const Sidebar = () => {
 
           <Notification/>
 
-          <p className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start  gap-2 cursor-pointer">
+          <p onClick={()=>navigate('/file')} className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start  gap-2 cursor-pointer">
             <File size={15}/> My files
 
           </p>

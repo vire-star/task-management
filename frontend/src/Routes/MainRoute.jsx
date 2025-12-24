@@ -7,6 +7,7 @@ import { ProtectRoute } from './ProtectRoute'
 import SingleTask from '@/Pages/Users/SingleTask'
 import Settings from '@/Pages/Users/Settings'
 import AcceptInvitation from '@/Pages/Users/Accept-Invitation'
+import MyFiles from '@/Pages/Users/MyFiles'
 
 const MainRoute = () => {
   return (
@@ -31,6 +32,11 @@ const MainRoute = () => {
         <Route path='/singleTask/:id' element={
           <ProtectRoute>
             <SingleTask/>
+          </ProtectRoute>
+        }/>
+        <Route path='/file' element={
+          <ProtectRoute>
+            <MyFiles/>
           </ProtectRoute>
         }/>
     </Routes>

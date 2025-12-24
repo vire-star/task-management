@@ -1,6 +1,7 @@
 import { Spinner } from "@/components/ui/spinner"
 import { useGetUserHook } from "@/hooks/userHooks"
 import { userStore } from "@/store/userStore"
+import { useEffect } from "react"
 
 import { Navigate } from "react-router-dom"
 
@@ -9,11 +10,13 @@ export const ProtectRoute  =({children})=>{
     const setUser = userStore((state)=>state.setUser)
     const {data,isLoading,  isError, error } = useGetUserHook()
 
-    console.log(data)
+    // console.log(data)
    
-    if(data){
-        setUser(data)
+     useEffect(() => {
+    if (data) {
+      setUser(data)
     }
+  }, [data, setUser])
 
     // useEffect((data)=>{
     //     setUser(data)
