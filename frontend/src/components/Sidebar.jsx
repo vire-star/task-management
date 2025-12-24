@@ -20,11 +20,13 @@ import { Button } from "@/components/ui/button";
 import { Bell, File, LayoutDashboard, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Notification from "./Notification";
+import { userStore } from "@/store/userStore";
 
 const Sidebar = () => {
   const { mutate } = useLogoutHook();
   const { data, isSuccess } = useGetAllWorkshopHook();
   const navigate= useNavigate()
+  const user = userStore((state)=>state.user)
 
   const setWorkshop = workshopStore((state) => state.setWorkshop);
 
@@ -45,13 +47,13 @@ const Sidebar = () => {
   return (
     <aside className="h-full w-[260px] bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 flex flex-col border-r border-slate-800">
       {/* Top: Logo + App name */}
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-slate-800">
-        <div className="h-9 w-9 rounded-xl bg-purple-500/80 flex items-center justify-center text-lg font-bold shadow-sm">
-          W
+      <div onClick={()=>navigate('/setting')} className="flex cursor-pointer items-center gap-2 px-4 py-4 border-b border-slate-800">
+        <div  className="h-9 w-9 rounded-xl cursor-pointer bg-purple-500/80 flex items-center justify-center text-lg font-bold shadow-sm">
+          <img src={user?.avatarUrl} className="h-full w-full rounded-xl" alt="" />
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold tracking-wide">
-            Workshop Hub
+          <span className="text-sm font-semibold capitalize tracking-wide">
+            {user?.name}
           </span>
           <span className="text-[11px] text-slate-400">
             Manage your sessions
