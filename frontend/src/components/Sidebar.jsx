@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLogoutHook } from "@/hooks/userHooks";
-import { useGetAllWorkshopHook } from "@/hooks/workshopHook";
+import { useGetInvitedWorkshopHook, useGetMyWorkshopHook } from "@/hooks/workshopHook";
 import { workshopStore } from "@/store/workshopStore";
 
 import {
@@ -24,7 +24,8 @@ import { userStore } from "@/store/userStore";
 
 const Sidebar = () => {
   const { mutate } = useLogoutHook();
-  const { data, isSuccess } = useGetAllWorkshopHook();
+  const { data, isSuccess } = useGetMyWorkshopHook();
+  const { data:invitedWorkshop } = useGetInvitedWorkshopHook();
   const navigate= useNavigate()
   const user = userStore((state)=>state.user)
 
@@ -64,7 +65,7 @@ const Sidebar = () => {
       {/* Middle: Workshop selector */}
       <div className="px-4 py-4 space-y-4 flex-1 overflow-y-auto">
         <div className="space-y-2">
-          <p  onClick={()=>navigate('/')}  className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start  gap-2 cursor-pointer">
+          <p  onClick={()=>navigate('/workshops')}  className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start  gap-2 cursor-pointer">
             <LayoutDashboard size={15}/> Workshop
           </p>
 
@@ -88,7 +89,7 @@ const Sidebar = () => {
               {/* Create workshop dialog */}
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-slate-400 uppercase">
-                  Your workshops
+                  My workshops
                 </p>
 
                 <Dialog>
@@ -128,6 +129,26 @@ const Sidebar = () => {
                 ) : (
                   <p className="text-xs text-slate-500">
                     No workshops found. Create a new one to get started.
+                  </p>
+                )}
+              </div>
+
+              <p className="text-xs font-medium text-slate-400 uppercase my-6">Invited Workshop</p>
+
+                <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                {invitedWorkshop?.workshops?.length ? (
+                  invitedWorkshop.workshops.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => workshopHandler(item)}
+                      className="w-full text-left text-sm px-2.5 py-1.5 rounded-md hover:bg-slate-800 text-slate-100 transition-colors"
+                    >
+                      {item.name}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    No one added you in any workshop yet
                   </p>
                 )}
               </div>

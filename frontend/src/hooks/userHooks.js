@@ -11,7 +11,7 @@ export const useRegisterHook = ()=>{
         mutationFn:registerApi,
         onSuccess:(data)=>{
             toast.success(data.message)
-            navigate('/')
+            navigate('/workshops')
         },
         onError:(err)=>{
             toast.error(err.response.data.message)
@@ -24,7 +24,7 @@ export const useLoginHook = ()=>{
         mutationFn:loginApi,
         onSuccess:(data)=>{
             toast.success(data.message)
-            navigate('/')
+            navigate('/workshops')
         },
         onError:(err)=>{
              toast.error(err.response.data.message)
@@ -38,7 +38,7 @@ export const useLogoutHook = ()=>{
         mutationFn:logoutApi,
         onSuccess:(data)=>{
             toast.success(data.message)
-            navigate ('/login')
+            navigate ('/')
         },
         onError:(err)=>{
             toast.error(err.response.data.message)

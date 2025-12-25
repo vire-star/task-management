@@ -8,13 +8,15 @@ import SingleTask from '@/Pages/Users/SingleTask'
 import Settings from '@/Pages/Users/Settings'
 import AcceptInvitation from '@/Pages/Users/Accept-Invitation'
 import MyFiles from '@/Pages/Users/MyFiles'
+import HomePage from '@/Pages/Users/HomePage'
 
 const MainRoute = () => {
   return (
     <Routes>
         <Route path='/login' element={<Login/>}/>
+        <Route path='/' element={<HomePage/>}/>
         <Route path='/register' element={<Register/>}/>
-        <Route path='/' element={
+        <Route path='/workshops' element={
           <ProtectRoute>
             <Home/>
           </ProtectRoute>

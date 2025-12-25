@@ -1,27 +1,26 @@
-import jwt from 'jsonwebtoken'
-import { ENV } from '../config/env.js'
+import jwt from "jsonwebtoken"
+import { ENV } from "../config/env.js"
 
-export const authMiddleware = async(req ,res ,next)=>{
+export const authMiddleware = async (req, res, next) => {
   try {
-    const Token = req.cookies.token
+    const token = req.cookies?.token
 
-    if(!Token){
+    if (!token) {
       return res.status(401).json({
-        message:"Token not found"
+        message: "Unauthorized: Token missing",
       })
     }
 
-    const decode = await jwt.verify(Token, ENV.JWT_SECRET)
+    const decoded = jwt.verify(token, ENV.JWT_SECRET)
 
-    if(!decode){
-      return res.status(401).json({
-        message:"Please login first"
-      })
-    }
-
-    req.id = decode.userId
+    req.id = decoded.userId
     next()
+
   } catch (error) {
-    console.log(error, "from authMiddlware controller")
+    console.error("Auth middleware error:", error.message)
+
+    return res.status(401).json({
+      message: "Unauthorized: Invalid or expired token",
+    })
   }
 }

@@ -1,8 +1,19 @@
 import axios from "axios"
 import { BaseUrl } from "./BaseUrl"
 
-export const getAllWorkShopApi = async()=>{
-    const res = await axios.get(`${BaseUrl}/workshop/getAllWorkshop`,
+export const getMyWorkShopApi = async()=>{
+    const res = await axios.get(`${BaseUrl}/workshop/getMyWorkshop`,
+        {
+            headers:{'Content-Type':"Application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}
+
+export const getInvitedWorkshopApi = async()=>{
+    const res = await axios.get(`${BaseUrl}/workshop/getInvitedWorkshop`,
         {
             headers:{'Content-Type':"Application/json"},
             withCredentials:true
@@ -34,7 +45,6 @@ export const leaveWorkshopApi = async(id)=>{
     return res.data
 }
 
-
 export const getTotalMemberInWorkshopApi = async(id)=>{
     const res = await axios.get(`${BaseUrl}/workshop/getTotalMember/${id}`,
        
@@ -47,3 +57,16 @@ export const getTotalMemberInWorkshopApi = async(id)=>{
     return res.data
 }
 
+
+
+export const deleteWorkshop=async(id)=>{
+    const res = await axios.delete(`${BaseUrl}/workshop/deleteWorkshop/${id}`,
+       
+        {
+             headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}

@@ -49,6 +49,116 @@ export const createWorkshop=async(req ,res )=>{
 }
 
 
+// workshop.controller.js
+
+// ✅ 1. Get workshops YOU CREATED (owner)
+export const getMyCreatedWorkshops = async (req, res) => {
+  try {
+    const userId = req.id
+
+    const workshops = await Workshop.find({ ownerId: userId })
+      .sort({ createdAt: -1 })
+      .lean()
+
+    // Get member count for each workshop
+    const workshopsWithCount = await Promise.all(
+      workshops.map(async (workshop) => {
+        const memberCount = await WorkshopMember.countDocuments({
+          workshopId: workshop._id
+        })
+        return {
+          ...workshop,
+          memberCount,
+          role: 'owner'  // You're the owner
+        }
+      })
+    )
+
+    res.status(200).json({
+      success: true,
+      workshops: workshopsWithCount
+    })
+  } catch (error) {
+    console.error('Get created workshops error:', error)
+    res.status(500).json({ error: error.message })
+  }
+}
+
+// ✅ 2. Get workshops WHERE YOU'RE INVITED (member)
+export const getInvitedWorkshops = async (req, res) => {
+  try {
+    const userId = req.id
+
+    // Find all workshops where user is a member
+    const memberships = await WorkshopMember.find({ userId })
+      .populate({
+        path: 'workshopId',
+        populate: {
+          path: 'ownerId',
+          select: 'name email avatarUrl'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .lean()
+
+    // Filter out workshops where user is owner
+    const invitedWorkshops = memberships
+      .filter(membership => 
+        membership.workshopId?.ownerId?._id.toString() !== userId.toString()
+      )
+      .map(membership => ({
+        ...membership.workshopId,
+        role: membership.role,
+        joinedAt: membership.createdAt
+      }))
+
+    res.status(200).json({
+      success: true,
+      workshops: invitedWorkshops
+    })
+  } catch (error) {
+    console.error('Get invited workshops error:', error)
+    res.status(500).json({ error: error.message })
+  }
+}
+
+// ✅ BONUS: Combined endpoint (optional)
+export const getAllWorkshopsWithType = async (req, res) => {
+  try {
+    const userId = req.id
+
+    // Get created workshops
+    const createdWorkshops = await Workshop.find({ ownerId: userId })
+      .lean()
+
+    // Get invited workshops
+    const memberships = await WorkshopMember.find({ userId })
+      .populate('workshopId')
+      .lean()
+
+    const invitedWorkshops = memberships
+      .filter(m => m.workshopId?.ownerId.toString() !== userId.toString())
+      .map(m => ({
+        ...m.workshopId,
+        role: m.role,
+        joinedAt: m.createdAt
+      }))
+
+    res.status(200).json({
+      success: true,
+      created: createdWorkshops.map(w => ({ ...w, role: 'owner' })),
+      invited: invitedWorkshops
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+
+
+
+
+
 
 export const getAllWorkshop = async (req, res) => {
   try {

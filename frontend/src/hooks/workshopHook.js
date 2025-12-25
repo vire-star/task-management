@@ -1,11 +1,19 @@
-import { acceptInvitationApi, getAllWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi } from '@/Api/workshop.api'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi } from '@/Api/workshop.api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-export const useGetAllWorkshopHook = ()=>{
+export const useGetMyWorkshopHook = ()=>{
     return useQuery({
-        queryFn:getAllWorkShopApi,
-        queryKey:['getAllWorkshop'],
+        queryFn:getMyWorkShopApi,
+        queryKey:['getMyWorkshop'],
+         refetchOnMount: true,
+
+    })
+}
+export const useGetInvitedWorkshopHook = ()=>{
+    return useQuery({
+        queryFn:getInvitedWorkshopApi,
+        queryKey:['getInvitedWorkshop'],
          refetchOnMount: true,
 
     })
@@ -51,5 +59,22 @@ export const useGetTotalMemberInWorkshopHook=(id)=>{
         queryKey:['getTotalMemberWorkshop',id],
         queryFn:()=>getTotalMemberInWorkshopApi(id),
         enabled:!!id
+    })
+}
+
+
+
+export const useDeleteWorkshop = ()=>{
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn:deleteWorkshop,
+        onSuccess:(data)=>{
+            queryClient.invalidateQueries(['getMyWorkshop'])
+            toast.success(data.message),
+            console.log(data)
+        },
+        onError:(err)=>{
+            console.log(err)
+        }
     })
 }
