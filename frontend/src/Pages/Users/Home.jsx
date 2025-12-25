@@ -28,6 +28,7 @@ import { useLeaveWorkshopHook } from '@/hooks/workshopHook'
 
 const Home = () => {
   const workshop = workshopStore((state) => state.workshop)
+  const clearWorkshop = workshopStore((state) => state.clearWorkshop)
   
 
   const { data, refetch } = useGetTask(workshop?._id)
@@ -85,7 +86,13 @@ const Home = () => {
   const {mutate:leaveWorkshop} = useLeaveWorkshopHook()
 
   const leaveWorkshopHandler=()=>{
-    leaveWorkshop(workshop._id)
+   leaveWorkshop(workshop._id, {
+  onSuccess: () => {
+    clearWorkshop()
+    navigate("/")
+    toast.success("Left workshop successfully")
+  }
+})
   }
   return (
    
@@ -108,7 +115,7 @@ const Home = () => {
            <Dialog>
   <DialogTrigger>
      
-     <p className='text-xs text-red-500 cursor-pointer font-medium' >Leave workshop</p>
+     <p  className='text-xs text-red-500 cursor-pointer font-medium' >Leave workshop</p>
   </DialogTrigger>
   <DialogContent>
     <DialogHeader>

@@ -1,4 +1,5 @@
 import { Task } from "../models/task.model.js";
+import { User } from "../models/user.model.js";
 import { Workshop } from "../models/workshop.model.js";
 import { WorkshopMember } from "../models/workshopMember.model.js";
 
@@ -195,3 +196,28 @@ export const assignUserToTask = async (req, res) => {
 
 
 
+export const getTasksAssignedToUser = async (req, res) => {
+  try {
+    const userId  = req.params.id;
+
+    const tasks = await Task.find({
+      assignees: userId,   // 👈 key logic
+    })
+      .populate("creatorId", "name email")
+      .populate("assignees", "name email")
+      .populate("workshopId", "name")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      totalTasks: tasks.length,
+      tasks,
+    });
+  } catch (error) {
+    console.error("Error fetching assigned tasks:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch assigned tasks",
+    });
+  }
+};

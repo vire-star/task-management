@@ -1,4 +1,4 @@
-import { acceptInvitationApi, getAllWorkShopApi, leaveWorkshopApi } from '@/Api/workshop.api'
+import { acceptInvitationApi, getAllWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi } from '@/Api/workshop.api'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -44,3 +44,12 @@ export const useLeaveWorkshopHook =()=>{
     })
 }
 
+
+
+export const useGetTotalMemberInWorkshopHook=(id)=>{
+    return useQuery({
+        queryKey:['getTotalMemberWorkshop',id],
+        queryFn:()=>getTotalMemberInWorkshopApi(id),
+        enabled:!!id
+    })
+}

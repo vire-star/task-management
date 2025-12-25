@@ -49,7 +49,7 @@ const Notification = () => {
       <DialogTrigger className="text-xs font-medium text-slate-400 uppercase flex items-center justify-start gap-2 cursor-pointer hover:text-slate-200 transition-colors p-1 rounded-sm hover:bg-slate-800/50">
         <div className="relative">
           <Bell size={15}/>
-          {notifications.length > 0 && (
+          {notifications?.length > 0 && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"/>
           )}
         </div>
@@ -63,7 +63,7 @@ const Notification = () => {
             Notifications
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500">
-            {notifications.length} new updates
+            {notifications?.length} new updates
           </DialogDescription>
         </DialogHeader>
 
@@ -79,13 +79,13 @@ const Notification = () => {
             <div className="text-center py-12 text-sm text-slate-500">
               Failed to load notifications
             </div>
-          ) : notifications.length === 0 ? (
+          ) : notifications?.notifications?.length === 0 ? (
             <div className="text-center py-12 text-sm text-slate-500">
               <Bell className="w-12 h-12 mx-auto mb-4 opacity-50"/>
               No notifications yet
             </div>
           ) : (
-            notifications.map((item, index) => (
+            notifications?.notifications?.map((item, index) => (
               <div 
                 key={item.id || index}
                 className="group p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl hover:shadow-lg hover:border-slate-300 hover:bg-white transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"

@@ -80,28 +80,57 @@ export const createFile = async (req, res) => {
 };
 
 
+export const deleteFile = async (req, res) => {
+  try {
+    const fileId = req.params.id;
 
-export const deleteFile = async(req,res)=>{
-   try {
-     const fileId = req.params.id;
-
-    const file = await File.findByIdAndDelete(fileId)
-
-    if(!file){
-        return res.status(401).json({
-            message:"File not found"
-        })
+    // ✅ Step 1: MongoDB se file details nikalo
+    const file = await File.findById(fileId);
+    if (!file) {
+      return res.status(404).json({
+        success: false,
+        message: "File not found"
+      });
     }
 
-    return res.status(201).json({
-        message:"File deleted"
-    })
+    // ✅ Step 2: ImageKit se file delete
+    await imagekit.deleteFile({
+      fileId: file.imagekitFileId,  // ImageKit file ID from DB
+    });
 
-   } catch (error) {
-    console.log(`error from delete file, ${error}`)
-   }
+    // ✅ Step 3: MongoDB record delete
+    await File.findByIdAndDelete(fileId);
 
-}
+    res.status(200).json({
+      success: true,
+      message: "File deleted successfully from ImageKit & Database",
+      deletedFile: {
+        id: file._id,
+        name: file.name,
+        imagekitFileId: file.imagekitFileId
+      }
+    });
+
+  } catch (error) {
+    console.error("Delete file error:", error);
+
+    // ✅ Error handling - partial cleanup
+    if (error.message.includes('FILE_NOT_FOUND')) {
+      // ImageKit file already deleted, just remove DB record
+      await File.findByIdAndDelete(req.params.id);
+      return res.status(200).json({ 
+        success: true, 
+        message: "DB record cleaned up (ImageKit file already deleted)" 
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete file",
+      error: error.message
+    });
+  }
+};
 
 
 export const getPrivateFile = async(req,res)=>{

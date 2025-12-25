@@ -1,4 +1,4 @@
-import { getSingleTaskApi, getTaskApi, updateStatusApi } from '@/Api/task.api'
+import { getSingleTaskApi, getTaskApi, getTasksAssignedToUser, updateStatusApi } from '@/Api/task.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 export const useGetTask = (id) => {
@@ -34,4 +34,13 @@ export const useGetSingleTaskHook = (id)=>{
         queryFn:()=>getSingleTaskApi(id),
         enabled:!!id
     })
+}
+
+
+export const useGetTaskAssignedToUser=  (id)=>{
+  return useQuery({
+    queryKey:['getTaskAssignedToUser', id],
+    queryFn:()=>getTasksAssignedToUser(id),
+    enabled:!!id
+  })
 }

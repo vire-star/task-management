@@ -37,3 +37,17 @@ export const getSingleTaskApi= async(id)=>{
 
     return res.data
 }
+export const getTasksAssignedToUser= async(id)=>{
+    const res = await axios.get(`${BaseUrl}/task/getUserAssignedTask/${id}`,
+       
+        {
+            headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+
+    )
+
+    return res.data
+}
+
+// getUserAssignedTask

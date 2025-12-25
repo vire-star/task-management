@@ -107,59 +107,56 @@ export const getSingleWorkshop = async(req,res)=>{
 }
 
 
-export const addMemberToWorkshop=async(req,res)=>{
-    try {
-        const { email, role  } = req.body; // email of user to add
-    const workshopId  = req.params.id; // workshop ID from URL
-    const currentUserId = req.id; // logged-in user (from auth middleware)
+export const addMemberToWorkshop = async (req, res) => {
+  try {
+    const { email, role } = req.body;
+    const workshopId = req.params.id;
+    const currentUserId = req.id;
 
-
+    const user = await User.findById(currentUserId);
     const workshop = await Workshop.findById(workshopId);
+    
     if (!workshop) {
       return res.status(404).json({ message: "Workshop not found" });
     }
 
-
-     const isOwner = workshop.ownerId.toString() === currentUserId;
-    // const isAdmin = await WorkshopMember.findOne({
-    //   workshopId,
-    //   userId: currentUserId,
-    //   role: "admin",
-    // });
-
-    console.log(isOwner)
-     if (!isOwner ) {
-      return res.status(403).json({ message: "Only owner/admin can add members" });
+    const isOwner = workshop.ownerId.toString() === currentUserId;
+    
+    if (!isOwner) {
+      return res.status(403).json({ message: "Only owner can add members" });
     }
 
-      const userExists = await User.findOne({ email });
+    // ✅ FIX 1: Workshop-specific existing member check
+    const userExists = await User.findOne({ email });
     if (userExists) {
       const alreadyMember = await WorkshopMember.findOne({
-        workshopId,
+        workshopId,           // ✅ SPECIFIC WORKSHOP
         userId: userExists._id,
       });
-
       if (alreadyMember) {
-        return res.status(400).json({ message: "User is already a member" });
+        return res.status(400).json({ message: "User is already a member of this workshop" });
       }
     }
 
-
-     const existingInvitation = await Invitation.findOne({
+    // ✅ FIX 2: Workshop + User + Status specific invitation check
+    const existingInvitation = await Invitation.findOne({
+      workshopId,           // ✅ WORKSHOP SPECIFIC!
       email,
-      workshopId,
+      invitedBy: currentUserId,
       status: "pending",
       expiresAt: { $gt: new Date() },
     });
 
     if (existingInvitation) {
-      return res.status(400).json({ message: "Invitation already sent to this email" });
+      return res.status(400).json({ 
+        message: "Invitation already sent to this user for this workshop",
+        invitationId: existingInvitation._id
+      });
     }
 
-
-     const token = crypto.randomBytes(32).toString("hex");
+    // ✅ Generate token
+    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
 
     const invitation = await Invitation.create({
       workshopId,
@@ -172,51 +169,62 @@ export const addMemberToWorkshop=async(req,res)=>{
 
     const inviterUser = await User.findById(currentUserId);
 
+    // ✅ Email logic (same as yours)
     if (userExists) {
-      // User exists → direct accept link
       const acceptLink = `${ENV.CLIENT_URL}/accept-invite/${token}`;
-
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        from:process.env.EMAIL_USER,
         to: email,
         subject: `Invitation to join ${workshop.name}`,
         html: `
           <h2>Workshop Invitation</h2>
           <p>Hi,</p>
-          <p><strong>${inviterUser.name}</strong> invited you to join the workshop <strong>${workshop.name}</strong> as a ${role}.</p>
+          <p><strong>${inviterUser.name}</strong> invited you to join <strong>${workshop.name}</strong> as a ${role}.</p>
           <a href="${acceptLink}" style="display:inline-block;padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;border-radius:5px;">Accept Invitation</a>
-          <p>Or copy this link: ${acceptLink}</p>
-          <p>This invitation expires in 7 days.</p>
+          <p>Or copy: ${acceptLink}</p>
+          <p>Expires in 7 days.</p>
         `,
       });
     } else {
-      // User doesn't exist → registration link with token
       const registerLink = `${process.env.CLIENT_URL}/register?invite=${token}`;
-
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: `You're invited to join ${workshop.name}`,
+        subject: `You're invited to ${workshop.name}`,
         html: `
           <h2>Workshop Invitation</h2>
           <p>Hi,</p>
-          <p><strong>${inviterUser.name}</strong> invited you to join the workshop <strong>${workshop.name}</strong>.</p>
-          <p>To join, please create your account first:</p>
+          <p><strong>${inviterUser.name}</strong> invited you to <strong>${workshop.name}</strong>.</p>
+          <p>Create account to join:</p>
           <a href="${registerLink}" style="display:inline-block;padding:10px 20px;background:#28a745;color:#fff;text-decoration:none;border-radius:5px;">Create Account & Join</a>
-          <p>Or copy this link: ${registerLink}</p>
-          <p>This invitation expires in 7 days.</p>
+          <p>Or copy: ${registerLink}</p>
+          <p>Expires in 7 days.</p>
         `,
       });
     }
 
     return res.status(201).json({
+      success: true,
       message: "Invitation sent successfully",
-      userExists,
+      invitation: {
+        id: invitation._id,
+        email,
+        workshop: workshop.name,
+        role,
+        expiresAt: invitation.expiresAt
+      },
+      userExists
     });
-    } catch (error) {
-        console.log(`error from add member to workshop, ${error}`)
-    }
-}
+
+  } catch (error) {
+    console.error("Add member error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
 
 
 
@@ -263,13 +271,20 @@ export const acceptInvitation = async (req, res) => {
     invitation.status = "accepted";
     await invitation.save();
 
+    const workshopName = await Workshop.findById(invitation.workshopId)
+
+    if(!workshopName){
+      return res.status(401).json({
+        message:"Workshop not found"
+      })
+    }
     // Create notification
     await Notification.create({
       recipientId: userId,
       actorId: invitation.invitedBy,
       type: "WORKSHOP_MEMBER_ADDED",
       workshopId: invitation.workshopId,
-      message: `You joined the workshop`,
+      message: `You joined ${workshopName.name} workshop`,
     });
 
     return res.status(200).json({
@@ -311,6 +326,8 @@ export const leaveWorkshop = async (req, res) => {
   try {
     const workshopId = req.params.id;
     const userId = req.id;
+
+    const user = await User.findById(userId)
 
     const workshop = await Workshop.findById(workshopId);
     if (!workshop) {
@@ -360,7 +377,7 @@ export const leaveWorkshop = async (req, res) => {
       actorId: userId,
       type: "WORKSHOP_LEFT",
       workshopId,
-      message: `A member left the workshop`,
+      message: `${user.name}  left the workshop`,
     });
 
     return res.status(200).json({
@@ -378,6 +395,8 @@ export const deleteWorkshop = async (req, res) => {
   try {
     const workshopId = req.params.id;
     const userId = req.id;
+
+     const user = await User.findById(userId)
 
     const workshop = await Workshop.findById(workshopId);
     if (!workshop) {

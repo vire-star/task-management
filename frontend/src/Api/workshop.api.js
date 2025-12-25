@@ -33,3 +33,17 @@ export const leaveWorkshopApi = async(id)=>{
 
     return res.data
 }
+
+
+export const getTotalMemberInWorkshopApi = async(id)=>{
+    const res = await axios.get(`${BaseUrl}/workshop/getTotalMember/${id}`,
+       
+        {
+            headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}
+
