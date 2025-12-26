@@ -1,4 +1,4 @@
-import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi } from '@/Api/workshop.api'
+import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi, removeUserfromWorkshopApi } from '@/Api/workshop.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -71,6 +71,18 @@ export const useDeleteWorkshop = ()=>{
         onSuccess:(data)=>{
             queryClient.invalidateQueries(['getMyWorkshop'])
             toast.success(data.message),
+            console.log(data)
+        },
+        onError:(err)=>{
+            console.log(err)
+        }
+    })
+}
+
+export const useRemoveUserFromWorkshopHook=()=>{
+    return useMutation({
+        mutationFn:removeUserfromWorkshopApi,
+        onSuccess:(data)=>{
             console.log(data)
         },
         onError:(err)=>{

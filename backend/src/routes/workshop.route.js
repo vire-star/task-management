@@ -1,6 +1,6 @@
 import express from 'express'
 import { authMiddleware } from '../middleware/auth.middleware.js'
-import { acceptInvitation, addMemberToWorkshop, createWorkshop, deleteWorkshop, getAllWorkshop, getInvitedWorkshops, getMyCreatedWorkshops, getSingleWorkshop, getTotalMemberInWorkShop, leaveWorkshop } from '../controller/workshop.controller.js'
+import { acceptInvitation, addMemberToWorkshop, createWorkshop, deleteWorkshop, getAllWorkshop, getInvitedWorkshops, getMyCreatedWorkshops, getSingleWorkshop, getTotalMemberInWorkShop, leaveWorkshop, removeUserFromWorkshop } from '../controller/workshop.controller.js'
 
 
 const workShopRoute = express.Router()
@@ -15,5 +15,6 @@ workShopRoute.post('/acceptInvitation/:id', authMiddleware, acceptInvitation)
 workShopRoute.get('/getTotalMember/:id', authMiddleware, getTotalMemberInWorkShop)
 workShopRoute.delete('/deleteWorkshop/:id', authMiddleware, deleteWorkshop)
 workShopRoute.delete('/leaveWorkshop/:id', authMiddleware, leaveWorkshop)
+workShopRoute.post('/removeUserFromWorkshop/:id', authMiddleware, removeUserFromWorkshop)
 
 export default workShopRoute

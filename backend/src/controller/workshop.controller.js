@@ -122,41 +122,6 @@ export const getInvitedWorkshops = async (req, res) => {
   }
 }
 
-// ✅ BONUS: Combined endpoint (optional)
-export const getAllWorkshopsWithType = async (req, res) => {
-  try {
-    const userId = req.id
-
-    // Get created workshops
-    const createdWorkshops = await Workshop.find({ ownerId: userId })
-      .lean()
-
-    // Get invited workshops
-    const memberships = await WorkshopMember.find({ userId })
-      .populate('workshopId')
-      .lean()
-
-    const invitedWorkshops = memberships
-      .filter(m => m.workshopId?.ownerId.toString() !== userId.toString())
-      .map(m => ({
-        ...m.workshopId,
-        role: m.role,
-        joinedAt: m.createdAt
-      }))
-
-    res.status(200).json({
-      success: true,
-      created: createdWorkshops.map(w => ({ ...w, role: 'owner' })),
-      invited: invitedWorkshops
-    })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
-
-
-
-
 
 
 
@@ -549,5 +514,114 @@ export const deleteWorkshop = async (req, res) => {
   } catch (error) {
     console.log("delete workshop error:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const removeUserFromWorkshop = async (req, res) => {
+  try {
+    const workshopId = req.params.id;
+    const ownerId = req.id; // Current logged-in user (owner)
+    const { deleteUserId } = req.body; // User to be removed
+
+    // ✅ 1. Validate input
+    if (!deleteUserId) {
+      return res.status(400).json({
+        message: "Please provide user ID to remove"
+      });
+    }
+
+    // ✅ 2. Find workshop
+    const workshop = await Workshop.findById(workshopId);
+    if (!workshop) {
+      return res.status(404).json({
+        message: "Workshop not found"
+      });
+    }
+
+    // ✅ 3. Verify ownership - Only owner can remove members
+    if (workshop.ownerId.toString() !== ownerId) {
+      return res.status(403).json({
+        message: "Only workshop owner can remove members"
+      });
+    }
+
+    // ✅ 4. Prevent owner from removing themselves
+    if (deleteUserId === ownerId) {
+      return res.status(400).json({
+        message: "Owner cannot remove themselves. Delete workshop instead."
+      });
+    }
+
+    // ✅ 5. Check if user is actually a member
+    const member = await WorkshopMember.findOne({
+      workshopId,
+      userId: deleteUserId
+    });
+
+    if (!member) {
+      return res.status(404).json({
+        message: "User is not a member of this workshop"
+      });
+    }
+
+    // ✅ 6. Get user details for notification
+    const removedUser = await User.findById(deleteUserId);
+    if (!removedUser) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // ✅ 7. Handle tasks - Remove from assignees
+    await Task.updateMany(
+      { workshopId },
+      { $pull: { assignees: deleteUserId } }
+    );
+
+    // ✅ 8. Handle tasks created by removed user
+    // OPTION A: Delete their tasks
+    await Task.deleteMany({
+      workshopId,
+      creatorId: deleteUserId
+    });
+
+    // OPTION B (Better): Reassign to owner (uncomment if you prefer this)
+    // await Task.updateMany(
+    //   { workshopId, creatorId: deleteUserId },
+    //   { creatorId: ownerId }
+    // );
+
+    // ✅ 9. Remove member from workshop
+    await WorkshopMember.deleteOne({
+      workshopId,
+      userId: deleteUserId
+    });
+
+    // ✅ 10. Notify removed user
+    await Notification.create({
+      recipientId: deleteUserId,
+      actorId: ownerId,
+      type: "REMOVED_FROM_WORKSHOP",
+      workshopId,
+      message: `You have been removed from ${workshop.name} workshop`
+    });
+
+    // ✅ 11. Send success response
+    return res.status(200).json({
+      success: true,
+      message: `${removedUser.name} has been removed from the workshop successfully`,
+      removedUser: {
+        id: removedUser._id,
+        name: removedUser.name,
+        email: removedUser.email
+      }
+    });
+
+  } catch (error) {
+    console.log(`Error from removeUserFromWorkshop: ${error}`);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };

@@ -70,3 +70,17 @@ export const deleteWorkshop=async(id)=>{
 
     return res.data
 }
+
+
+export const removeUserfromWorkshopApi = async ({ workshopId, deleteUserId }) => {
+  // ✅ Destructure karke workshopId URL mein aur deleteUserId body mein
+  const res = await axios.post(
+    `${BaseUrl}/workshop/removeUserFromWorkshop/${workshopId}`,  // ✅ URL param
+    { deleteUserId },  // ✅ Body payload
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true
+    }
+  )
+  return res.data
+}
