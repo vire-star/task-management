@@ -17,4 +17,5 @@ workShopRoute.delete('/deleteWorkshop/:id', authMiddleware, deleteWorkshop)
 workShopRoute.delete('/leaveWorkshop/:id', authMiddleware, leaveWorkshop)
 workShopRoute.post('/removeUserFromWorkshop/:id', authMiddleware, removeUserFromWorkshop)
 
+
 export default workShopRoute

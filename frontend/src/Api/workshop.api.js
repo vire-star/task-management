@@ -84,3 +84,24 @@ export const removeUserfromWorkshopApi = async ({ workshopId, deleteUserId }) =>
   )
   return res.data
 }
+
+
+// inviteMember
+export const inviteMemberToWorkshopApi = async ({ workshopId, email, role }) => {
+  const res = await axios.post(
+    `${BaseUrl}/workshop/inviteMember/${workshopId}`,
+    { 
+      email,   // ✅ Required by backend
+      role     // ✅ Required by backend
+    },
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true
+    }
+  )
+  return res.data
+}
+
+
+// getInvitedWorkshop
+

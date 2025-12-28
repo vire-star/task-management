@@ -40,8 +40,7 @@ export const registerUser = async(req, res) => {
 
     // ✅ Auto-accept invitation if token provided
     if (inviteToken) {
-      console.log('🔍 Checking invitation for token:', inviteToken) // ✅ Debug
-
+    
       const invitation = await Invitation.findOne({
         token: inviteToken,
         email,

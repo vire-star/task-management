@@ -3,7 +3,7 @@ import { Notification } from "../models/notification.model.js";
 // ✅ Mark SINGLE notification as read
 export const markNotificationAsRead = async (req, res) => {
   try {
-    const { notificationId } = req.params;
+    const  notificationId  = req.params.id;
     const userId = req.id;
 
     const notification = await Notification.findOneAndUpdate(

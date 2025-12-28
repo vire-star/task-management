@@ -1,4 +1,4 @@
-import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, leaveWorkshopApi, removeUserfromWorkshopApi } from '@/Api/workshop.api'
+import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, inviteMemberToWorkshopApi, leaveWorkshopApi, removeUserfromWorkshopApi } from '@/Api/workshop.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -90,3 +90,32 @@ export const useRemoveUserFromWorkshopHook=()=>{
         }
     })
 }
+
+
+
+
+export const useInviteMemberToWorkshopHook = () => {
+//   const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: inviteMemberToWorkshopApi,
+    
+    onSuccess: (data) => {
+      console.log('Invitation sent:', data)
+      
+      // ✅ Invalidate queries to refetch updated data
+    //   queryClient.invalidateQueries(['myWorkshops'])
+    //   queryClient.invalidateQueries(['workshopMembers'])
+      
+      toast.success(data.message || 'Invitation sent successfully')
+    },
+    
+    onError: (error) => {
+      console.error('Invitation error:', error)
+      const errorMsg = error?.response?.data?.message || 'Failed to send invitation'
+      toast.error(errorMsg)
+    }
+  })
+}
+
+

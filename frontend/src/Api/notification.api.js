@@ -10,3 +10,30 @@ export const getNotificationApi = async()=>{
     )
     return res.data
 }
+
+
+export const readSingleNotifiation = async(id)=>{
+    const res = await axios.put(`${BaseUrl}/notification/read/${id}`,
+        {},
+        {
+            headers:{'Content-Type':'applicatioin/json'},
+            withCredentials:true
+        }
+    )
+    return res.data
+}
+
+
+
+export const readAllNotificationApi = async()=>{
+    const res = await axios.put(`${BaseUrl}/notification/read-all`,
+        {},
+        {
+             headers:{'Content-Type':'applicatioin/json'},
+            withCredentials:true
+
+        }
+    )
+
+    return res.data
+}

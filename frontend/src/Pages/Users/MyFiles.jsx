@@ -56,7 +56,7 @@ const MyFiles = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 p-9">
+    <div className="h-screen w-full bg-slate-50 p-9 overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm">

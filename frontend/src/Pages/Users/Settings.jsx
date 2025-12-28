@@ -1,5 +1,6 @@
 import { 
   useDeleteWorkshop, 
+  useGetInvitedWorkshopHook, 
   useGetMyWorkshopHook, 
   useGetTotalMemberInWorkshopHook, 
   useRemoveUserFromWorkshopHook
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/popover'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import InviteMemberToWorkshop from '@/components/InviteMemberToWorkshop'
 
 const Settings = () => {
   const user = userStore((state) => state.user)
@@ -30,7 +32,7 @@ const Settings = () => {
   const [selectedUserId, setSelectedUserId] = useState("")
   const [deletePopoverId, setDeletePopoverId] = useState(null)
   const [memberPopoverId, setMemberPopoverId] = useState(null)
-  const [deleteDialogMember, setDeleteDialogMember] = useState(null) // ✅ NEW STATE
+  const [deleteDialogMember, setDeleteDialogMember] = useState(null)
   
   const { data: totalMember } = useGetTotalMemberInWorkshopHook(activeWorkshopId)
   const { data: taskAssignedToUser } = useGetTaskAssignedToUser(selectedUserId)
@@ -42,7 +44,6 @@ const Settings = () => {
     removeUserFromWorkshop(
       { 
         workshopId: member.workshopId,
- 
         deleteUserId: member.userId._id 
       },
       {
@@ -55,11 +56,10 @@ const Settings = () => {
         }
       }
     )
-    console.log(member.workshopId)
-    console.log(member.userId._id)
-    console.log(member)
   }
 
+  const {data:invitedWorkshop} = useGetInvitedWorkshopHook()
+  console.log(invitedWorkshop)
   const handleWorkshopClick = (id) => {
     setActiveWorkshopId(id)
   }
@@ -92,7 +92,7 @@ const Settings = () => {
                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                 alt={user?.name}
               />
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all">
+              <button className="absolute bottom-0 right-0 w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-full flex items-center justify-center shadow-lg transition-colors duration-200">
                 <Pencil className="w-4 h-4" />
               </button>
             </div>
@@ -125,27 +125,37 @@ const Settings = () => {
                   value={`workshop-${index}`}
                   className="border border-slate-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all overflow-hidden"
                 >
-                  {/* Custom Header */}
+                  {/* ✅ Custom Header with proper positioning */}
                   <div className="relative">
                     <AccordionTrigger 
                       onClick={() => handleWorkshopClick(item._id)}
                       className="px-5 py-4 w-full hover:no-underline hover:bg-slate-50 transition-all"
                     >
                       <div className="flex items-center gap-3 pr-12">
-                        <div className="text-left">
+                        <div className="text-left flex-1">
                           <h3 className="font-bold text-lg text-slate-900">
                             {item.name}
                           </h3>
                           {item.description && (
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-slate-500 mt-1 mb-2">
                               {item.description}
                             </p>
                           )}
+                          {/* ✅ Placeholder for invite button positioning */}
+                          <div className="h-6"></div>
                         </div>
                       </div>
                     </AccordionTrigger>
 
-                    {/* Delete Button */}
+                    {/* ✅ Invite Button - Absolute positioned at bottom left */}
+                    <div 
+                      className="absolute left-5 bottom-3 z-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <InviteMemberToWorkshop item={item} />
+                    </div>
+
+                    {/* ✅ Delete Button - Absolute positioned at right center */}
                     <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10">
                       <Popover 
                         open={deletePopoverId === item._id}
@@ -153,9 +163,9 @@ const Settings = () => {
                       >
                         <PopoverTrigger
                           onClick={(e) => e.stopPropagation()}
-                          className="p-2 rounded-lg hover:bg-slate-50 transition-all"
+                          className="p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
                         >
-                          <Trash2 className="w-4 h-4 text-slate-500" />
+                          <Trash2 className="w-4 h-4 text-red-500 hover:text-red-600" />
                         </PopoverTrigger>
 
                         <PopoverContent 
@@ -175,13 +185,14 @@ const Settings = () => {
                               </p>
                             </div>
 
+                            {/* ✅ Button hierarchy: Cancel (secondary) + Delete (destructive) */}
                             <div className="flex gap-3">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setDeletePopoverId(null)
                                 }}
-                                className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all"
+                                className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors duration-200"
                               >
                                 Cancel
                               </button>
@@ -191,7 +202,7 @@ const Settings = () => {
                                   handleDeleteWorkshop(item._id, item.name)
                                 }}
                                 disabled={isDeleting}
-                                className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {isDeleting ? 'Deleting...' : 'Delete'}
                               </button>
@@ -218,7 +229,7 @@ const Settings = () => {
                           totalMember.allMember.map((member) => (
                             <div 
                               key={member._id} 
-                              className='bg-white py-3 px-4 rounded-lg border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between'
+                              className='bg-white py-3 px-4 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors duration-200 flex items-center justify-between'
                             >
                               <h1 className="font-medium text-slate-900">{member.userId.name}</h1>
                               
@@ -231,21 +242,22 @@ const Settings = () => {
                                     e.stopPropagation()
                                     handleMemberClick(member.userId._id)
                                   }}
-                                  className="p-2 rounded-lg hover:bg-slate-100 transition-all"
+                                  className="p-2 rounded-lg hover:bg-slate-100 transition-colors duration-200"
                                 >
                                   <EllipsisVertical className="w-4 h-4 text-slate-600" />
                                 </PopoverTrigger>
                                 
                                 <PopoverContent 
                                   align="end" 
-                                  className="w-[25vw]"
+                                  className="w-80"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <div className="space-y-3">
-                                    <span className="font-bold text-slate-900 mb-2">
+                                    <h4 className="font-bold text-slate-900 mb-1">
                                       Assigned Tasks
-                                    </span>
+                                    </h4>
                                     
+                                    {/* ✅ Tasks list with proper spacing */}
                                     {taskAssignedToUser?.tasks?.length > 0 ? (
                                       <div className="space-y-2 max-h-48 overflow-y-auto">
                                         {taskAssignedToUser.tasks.map((task, idx) => (
@@ -256,39 +268,44 @@ const Settings = () => {
                                             <p className="text-sm font-medium text-slate-900 truncate flex-1 min-w-0">
                                               {task.title}
                                             </p>
-                                            <span className="text-xs cursor-pointer font-medium text-slate-600 hover:text-slate-700 whitespace-nowrap shrink-0">
+                                            <button 
+                                              className="text-xs font-medium text-red-600 hover:text-red-700 whitespace-nowrap shrink-0 px-2 py-1 rounded hover:bg-red-50 transition-colors duration-200"
+                                            >
                                               Remove
-                                            </span>
+                                            </button>
                                           </div>
                                         ))}
                                       </div>
                                     ) : (
-                                      <p className="text-sm text-slate-500 py-2">
+                                      <p className="text-sm text-slate-500 py-3 text-center bg-slate-50 rounded-lg">
                                         No tasks assigned to this user
                                       </p>
                                     )}
                                     
-                                    <button 
-                                      className="w-full mt-3 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        toast.info('Assign task feature coming soon!')
-                                      }}
-                                    >
-                                      Assign Task
-                                    </button>
+                                    {/* ✅ Action buttons with clear hierarchy */}
+                                    <div className="space-y-2 pt-2 border-t border-slate-200">
+                                      <button 
+                                        className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors duration-200"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          toast.info('Assign task feature coming soon!')
+                                        }}
+                                      >
+                                        Assign Task
+                                      </button>
 
-                                    {/* ✅ Remove from Workshop - Opens Dialog */}
-                                    <button 
-                                      className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setMemberPopoverId(null) // Close popover first
-                                        setDeleteDialogMember(member) // Open dialog
-                                      }}
-                                    >
-                                      Remove from Workshop
-                                    </button>
+                                      {/* ✅ Destructive action - Red color */}
+                                      <button 
+                                        className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setMemberPopoverId(null)
+                                          setDeleteDialogMember(member)
+                                        }}
+                                      >
+                                        Remove from Workshop
+                                      </button>
+                                    </div>
                                   </div>
                                 </PopoverContent>
                               </Popover>
@@ -297,7 +314,7 @@ const Settings = () => {
                         ) : (
                           <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-slate-200">
                             <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                            <p className="text-sm text-slate-800">No members yet</p>
+                            <p className="text-sm text-slate-500">No members yet</p>
                           </div>
                         )}
                       </div>
@@ -310,7 +327,7 @@ const Settings = () => {
             <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
               <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-500 text-lg">No workspaces created yet</p>
-              <button className="mt-4 px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all">
+              <button className="mt-4 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors duration-200">
                 Create Workspace
               </button>
             </div>
@@ -320,19 +337,61 @@ const Settings = () => {
         {/* Invited Workspaces Section */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <Users className="w-6 h-6 text-zinc-600" />
+            <Users className="w-6 h-6 text-slate-600" />
             <h2 className="text-2xl font-bold text-slate-900">
               Invited Workspaces
             </h2>
           </div>
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
+          {
+            invitedWorkshop?.workshops.length>0? 
+            <>
+{
+  invitedWorkshop?.workshops.map((item, index) => {
+    return (
+      <div 
+        key={index} 
+        className='bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-all duration-200'
+      >
+        {/* Workshop Name */}
+        <h2 className='text-xl font-bold text-slate-900 mb-2'>
+          {item.name}
+        </h2>
+        
+        {/* Description */}
+        {item.description && (
+          <p className='text-sm text-slate-600 mb-4 leading-relaxed'>
+            {item.description}
+          </p>
+        )}
+        
+        {/* Owner Info */}
+        <div className='flex items-center gap-2 pt-3 border-t border-slate-100'>
+          <span className='text-xs font-medium text-slate-500'>
+            Owner:
+          </span>
+          <span className='text-sm font-semibold text-slate-900'>
+            {item.ownerId.name}
+          </span>
+        </div>
+      </div>
+    )
+  })
+}
+
+            </>
+            :
+            
+            <>
+            <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
             <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500">No invited workspaces yet</p>
           </div>
+            </>
+          }
         </div>
       </div>
 
-      {/* ✅ Delete Member Dialog - OUTSIDE all Popovers */}
+      {/* ✅ Delete Member Dialog - Clean and consistent */}
       <Dialog 
         open={deleteDialogMember !== null}
         onOpenChange={(open) => !open && setDeleteDialogMember(null)}
@@ -347,17 +406,18 @@ const Settings = () => {
             </DialogDescription>
           </DialogHeader>
           
+          {/* ✅ Consistent button hierarchy */}
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setDeleteDialogMember(null)}
-              className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all"
+              className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors duration-200"
             >
               Cancel
             </button>
             <button
               onClick={() => removeUserFromWorkshopHandler(deleteDialogMember)}
               disabled={isRemovingMember}
-              className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isRemovingMember ? 'Removing...' : 'Remove Member'}
             </button>
