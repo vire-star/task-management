@@ -1,5 +1,5 @@
 import Sidebar from '@/components/Sidebar'
-import { useGetTask, useUpdateStatusHook } from '@/hooks/task.hook'
+import { useCreateTaskHook, useGetTask, useUpdateStatusHook } from '@/hooks/task.hook'
 import { workshopStore } from '@/store/workshopStore'
 import { 
   DndContext, 
@@ -25,16 +25,20 @@ import SingleTask from './SingleTask'
 import { userStore } from '@/store/userStore'
 import { toast } from 'sonner'
 import { useLeaveWorkshopHook } from '@/hooks/workshopHook'
+import { Workflow } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 
 const Home = () => {
   const workshop = workshopStore((state) => state.workshop)
   const clearWorkshop = workshopStore((state) => state.clearWorkshop)
   
+  const {register, handleSubmit} = useForm()
 
   const { data, refetch } = useGetTask(workshop?._id)
   const { mutate: changeStatusMutate } = useUpdateStatusHook()
 
 
+  const {mutate:createTask} = useCreateTaskHook()
 
   const navigate = useNavigate()
 
@@ -94,6 +98,16 @@ const Home = () => {
   }
 })
   }
+
+  const createTaskHandler=(data)=>{
+    createTask({
+      workshopId:workshop._id,
+    title:data.title,
+    description:data.description
+    })
+
+   
+  }
   return (
    
     
@@ -108,6 +122,82 @@ const Home = () => {
           <p className="text-sm text-slate-500 mt-1 font-medium">
             Manage your tasks across different stages
           </p>
+         
+     
+     <Dialog>
+  {/* Trigger */}
+  <DialogTrigger asChild>
+    <button
+      className="flex items-center gap-2 px-3 py-2 rounded-md
+                 text-slate-600 hover:text-slate-900
+                 hover:bg-slate-100 transition-all"
+    >
+      <Workflow size={18} className="text-slate-500" />
+      <span className="text-sm font-medium">Add Task</span>
+    </button>
+  </DialogTrigger>
+
+  {/* Dialog Content */}
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle className="text-slate-800 tracking-tight text-xl font-semibold">
+        Create task inside <span className="text-purple-600">{workshop.name}</span>
+      </DialogTitle>
+    </DialogHeader>
+
+    {/* FORM BODY */}
+    <form
+      onSubmit={handleSubmit(createTaskHandler)}
+      className="mt-5 flex flex-col gap-4"
+    >
+      {/* Title */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-slate-500">
+          Task title
+        </label>
+        <input
+          {...register("title")}
+          placeholder="Enter task title"
+          className="border border-slate-300 rounded-md px-3 py-2
+                     focus:outline-none focus:ring-2 focus:ring-purple-500
+                     text-sm"
+        />
+      </div>
+
+      {/* Description */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-slate-500">
+          Description
+        </label>
+        <textarea
+          {...register("description")}
+          placeholder="Describe the task (optional)"
+          rows={3}
+          className="border border-slate-300 rounded-md px-3 py-2
+                     focus:outline-none focus:ring-2 focus:ring-purple-500
+                     text-sm resize-none"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-2 pt-2">
+       
+
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-md text-sm font-medium
+                     bg-slate-900 text-white hover:bg-slate-800
+                     active:scale-95 transition"
+        >
+          Create Task
+        </button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
+
+
+
          </div>
           
       {

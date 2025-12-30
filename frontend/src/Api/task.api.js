@@ -63,3 +63,16 @@ export const assignUserToTaskApi =async({taskId, userId})=>{
     )
     return res.data
 }
+
+
+export const createTask = async({workshopId, title, description})=>{
+    const res = await axios.post(`${BaseUrl}/task/createTask/${workshopId}`,
+        {title,description},
+        {
+             headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}
