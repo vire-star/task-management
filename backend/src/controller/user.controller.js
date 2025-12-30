@@ -10,7 +10,7 @@ export const registerUser = async(req, res) => {
   try {
     const { name, email, password, inviteToken } = req.body;
 
-    console.log('📥 Register payload:', { name, email, inviteToken }) // ✅ Debug
+   
 
     if (!name || !email || !password) {
       return res.status(401).json({
@@ -48,10 +48,10 @@ export const registerUser = async(req, res) => {
         expiresAt: { $gt: new Date() },
       })
 
-      console.log('📧 Invitation found:', invitation ? 'YES' : 'NO') // ✅ Debug
+      // console.log('📧 Invitation found:', invitation ? 'YES' : 'NO') // ✅ Debug
 
       if (invitation) {
-        console.log('✅ Adding user to workshop:', invitation.workshopId) // ✅ Debug
+        // console.log('✅ Adding user to workshop:', invitation.workshopId) // ✅ Debug
 
         // Add user to workshop
         await WorkshopMember.create({
@@ -75,7 +75,7 @@ export const registerUser = async(req, res) => {
         })
 
         workshopId = invitation.workshopId
-        console.log('🎉 Workshop joined successfully:', workshopId) // ✅ Debug
+        // console.log('🎉 Workshop joined successfully:', workshopId) // ✅ Debug
       }
     }
 

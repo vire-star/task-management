@@ -6,9 +6,10 @@ import { useLocation } from 'react-router-dom'
 
 const App = () => {
   const location = useLocation()
-  const hiddenRoutes=['/']
-  // const shouldHide = hiddenRoutes.some((route)=>location.pathname.startsWith(route))
+  const hiddenRoutes=['/','/login']
+
   const shouldHide = hiddenRoutes.includes(location.pathname)
+ 
   return (
     <div className='flex h-screen  w-full'>
        {!shouldHide&& <Sidebar/>}

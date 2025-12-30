@@ -51,3 +51,15 @@ export const getTasksAssignedToUser= async(id)=>{
 }
 
 // getUserAssignedTask
+
+export const assignUserToTaskApi =async({taskId, userId})=>{
+    const res =await axios.post(`${BaseUrl}/task/assignToTask/${taskId}`,
+        {userId},
+         {
+            headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+
+    )
+    return res.data
+}

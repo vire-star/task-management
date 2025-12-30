@@ -39,11 +39,7 @@ const Sidebar = () => {
     setWorkshop(item);
   };
 
-    useEffect(() => {
-    if (isSuccess && data?.workshops?.length > 0) {
-      setWorkshop(data.workshops[0]); // 👈 default workshop
-    }
-  }, [isSuccess, data]);
+  
 
   return (
     <aside className="h-full w-[260px] bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 flex flex-col border-r border-slate-800">

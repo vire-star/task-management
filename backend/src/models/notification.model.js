@@ -6,7 +6,7 @@ const notificationSchema = new mongoose.Schema(
     actorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },     // jisne action kiya
     type: {
       type: String,
-      enum: ["WORKSHOP_MEMBER_ADDED", "COMMENT_MENTION","WORKSHOP_LEFT","REMOVED_FROM_WORKSHOP"],
+      enum: ["WORKSHOP_MEMBER_ADDED", "COMMENT_MENTION","WORKSHOP_LEFT","REMOVED_FROM_WORKSHOP","WORKSHOP_DELETED"],
       required: true,
     },
     workshopId: { type: mongoose.Schema.Types.ObjectId, ref: "Workshop" },
