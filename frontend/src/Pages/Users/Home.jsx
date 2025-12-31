@@ -1,5 +1,5 @@
 import Sidebar from '@/components/Sidebar'
-import { useCreateTaskHook, useGetTask, useUpdateStatusHook } from '@/hooks/task.hook'
+import { useCreateTaskHook, useDeleteTaskHook, useGetTask, useUpdateStatusHook } from '@/hooks/task.hook'
 import { workshopStore } from '@/store/workshopStore'
 import { 
   DndContext, 
@@ -25,6 +25,7 @@ import { toast } from 'sonner'
 import { useLeaveWorkshopHook } from '@/hooks/workshopHook'
 import { Menu, Workflow, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
+import { Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover'
 
 const Home = () => {
   const workshop = workshopStore((state) => state?.workshop)
@@ -397,13 +398,24 @@ const DroppableColumn = ({ id, title, count, children }) => {
 }
 
 
+
 // ✅ Responsive Draggable Task Component
+
+
+
+// export default DraggableTask
+
 const DraggableTask = ({ task }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task?._id,
   })
 
   const user = userStore((state) => state?.user)
+  const { mutate } = useDeleteTaskHook()
+  const navigate = useNavigate()
+  
+  // ✅ Popover state management
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   
   const isCreator = task?.creatorId?.toString() === user?._id?.toString()
   
@@ -413,10 +425,8 @@ const DraggableTask = ({ task }) => {
       : assignee?.toString()
     return assigneeId === user?._id?.toString()
   }) || false
-
+  
   const canAccess = isCreator || isAssignee
-
-  const navigate = useNavigate()
   
   const singleTask = (e) => {
     if (isDragging) {
@@ -433,11 +443,16 @@ const DraggableTask = ({ task }) => {
     }
   }
 
+  const deleteTaskHandler = (id) => {
+    mutate(id)
+    setIsPopoverOpen(false) // ✅ Delete ke baad popover close
+  }
+
   const style = {
     transform: transform 
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)` 
       : undefined,
-    opacity: isDragging ? 0 : 1,
+    opacity: isDragging ? 0.5 : 1,
     position: 'relative',
     zIndex: isDragging ? 50 : 'auto',
     transition: 'opacity 200ms ease',
@@ -453,45 +468,150 @@ const DraggableTask = ({ task }) => {
       className={`
         group 
         bg-white 
-        p-3 sm:p-4 
+        p-4 
         rounded-lg 
         border 
+        border-slate-200
         shadow-sm 
         transition-all
+        hover:shadow-md
         ${canAccess 
-          ? 'cursor-pointer hover:shadow-md hover:border-slate-300' 
+          ? 'cursor-grab active:cursor-grabbing hover:border-slate-300' 
           : 'opacity-60 cursor-not-allowed'
         }
+        ${isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}
       `}
     >
-      <h1 onClick={(e)=>{
-        e.preventDefault()
-        e.stopPropagation()
-        console.log(task._id)
-      }}>delete task</h1>
-      <h3 className="text-sm sm:text-base font-semibold text-slate-900 leading-snug mb-2 line-clamp-2">
-        {task?.title || 'Untitled Task'}
-      </h3>
+      {/* Header with Title and Delete Button */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <h3 className="flex-1 text-sm sm:text-base font-semibold text-slate-900 leading-snug line-clamp-2">
+          {task?.title || 'Untitled Task'}
+        </h3>
+        
+        {/* ✅ Controlled Popover */}
+        {canAccess && (
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex-shrink-0 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                aria-label="Delete task"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-4 w-4" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path 
+                    fillRule="evenodd" 
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" 
+                    clipRule="evenodd" 
+                  />
+                </svg>
+              </button>
+            </PopoverTrigger>
 
+            <PopoverContent 
+              onClick={(e) => e.stopPropagation()}
+              className="w-72 p-0 border border-slate-200 shadow-lg"
+              align="end"
+            >
+              <div className="p-4 space-y-3">
+                {/* Warning Header */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-5 w-5 text-red-600" 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor"
+                    >
+                      <path 
+                        fillRule="evenodd" 
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" 
+                        clipRule="evenodd" 
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">
+                      Delete Task?
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1">
+                      This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2">
+                  {/* ✅ Cancel Button - manually close */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsPopoverOpen(false)
+                    }}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  
+                  {/* ✅ Delete Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteTaskHandler(task._id)
+                    }}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+
+      {/* Description */}
       {task?.description && (
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-2">
+        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-2 mb-3">
           {task.description}
         </p>
       )}
 
-      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 flex items-center gap-2">
+      {/* Footer */}
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-          ID: {task?._id?.slice(-6) || 'N/A'}
+          #{task?._id?.slice(-6) || 'N/A'}
         </span>
+        
         {!canAccess && (
-          <span className="ml-auto text-xs text-red-500 font-medium">
-            🔒 Locked
+          <span className="flex items-center gap-1 text-xs text-red-500 font-medium">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-3 w-3" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" 
+                clipRule="evenodd" 
+              />
+            </svg>
+            Locked
           </span>
         )}
       </div>
     </div>
   )
 }
+
+
+
 
 // ✅ Reusable Task Dialog Component
 const TaskDialog = ({ workshop, register, handleSubmit, createTaskHandler }) => {

@@ -81,13 +81,15 @@ export const useCreateTaskHook = ()=>{
 
 
 export const useDeleteTaskHook = ()=>{
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn:deleteTask,
     onSuccess:(data)=>{
-      console.log(data.message)
+      toast.success(data.message)
+      queryClient.invalidateQueries(['getTask'])
     },
     onError:(err)=>{
-      console.log(err)
+      toast.error(err?.response?.data?.message)
     }
 
   })
