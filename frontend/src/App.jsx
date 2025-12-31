@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom'
 
 const App = () => {
   const location = useLocation()
-  const hiddenRoutes=['/','/login']
+  const hiddenRoutes=['/','/login', '/register']
 
   const shouldHide = hiddenRoutes.includes(location.pathname)
  
