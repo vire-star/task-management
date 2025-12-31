@@ -76,3 +76,18 @@ export const createTask = async({workshopId, title, description})=>{
 
     return res.data
 }
+
+
+// delteTask/:id
+
+
+export const deleteTask = async(id)=>{
+    const res = await axios.delete(`${BaseUrl}/task/delteTask/${id}`,
+        {
+         headers:{'Content-Type':"application/json"},
+            withCredentials:true
+        }
+    )
+
+    return res.data
+}

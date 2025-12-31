@@ -1,4 +1,4 @@
-import { assignUserToTaskApi, createTask, getSingleTaskApi, getTaskApi, getTasksAssignedToUser, updateStatusApi } from '@/Api/task.api'
+import { assignUserToTaskApi, createTask, deleteTask, getSingleTaskApi, getTaskApi, getTasksAssignedToUser, updateStatusApi } from '@/Api/task.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 export const useGetTask = (id) => {
@@ -64,14 +64,31 @@ export const useAssignUserToTaskHook=()=>{
 
 
 export const useCreateTaskHook = ()=>{
+  const queryClient  = useQueryClient()
   return useMutation({
     mutationFn:createTask,
     onSuccess:(data)=>{
       toast.success(data.message),
-      console.log(data)
+      // console.log(data)
+      queryClient.invalidateQueries(['getTask'])
+    },
+    onError:(err)=>{
+      console.log(err)
+      toast.error(err?.response?.data?.message)
+    }
+  })
+}
+
+
+export const useDeleteTaskHook = ()=>{
+  return useMutation({
+    mutationFn:deleteTask,
+    onSuccess:(data)=>{
+      console.log(data.message)
     },
     onError:(err)=>{
       console.log(err)
     }
+
   })
 }

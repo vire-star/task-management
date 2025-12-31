@@ -49,6 +49,7 @@ const Settings = () => {
 
   const { data: totalMember } =
     useGetTotalMemberInWorkshopHook(activeWorkshopId);
+    // console.log(totalMember)
   const { data: taskAssignedToUser } = useGetTaskAssignedToUser(selectedUserId);
 
   const { mutate: removeUserFromWorkshop, isLoading: isRemovingMember } =
@@ -59,6 +60,7 @@ const Settings = () => {
   const [selectedMemberForAssign, setSelectedMemberForAssign] = useState(null);
   const [availableTasks, setAvailableTasks] = useState([]);
 
+  console.log(selectedMemberForAssign)
   const removeUserFromWorkshopHandler = (member) => {
     removeUserFromWorkshop(
       {
@@ -105,8 +107,9 @@ const Settings = () => {
   };
 
   const handleAssignTask = (taskId, userId) => {
+    console.log(userId)
     assignUser(
-      { taskId, userId },
+      { taskId, userId},
       {
         onSuccess: () => {
           setAssignDialogOpen(false);
@@ -316,6 +319,7 @@ const Settings = () => {
                                                 onClick={(e)=>{
                                               e.stopPropagation(),
                                               setAssignDialogOpen(true)
+                                              setSelectedMemberForAssign(member);
                                             }}
                                               className="text-xs font-medium text-red-600 hover:text-red-700 whitespace-nowrap shrink-0 px-2 py-1 rounded hover:bg-red-50 transition-colors duration-200">
                                                 Remove
@@ -340,7 +344,7 @@ const Settings = () => {
                                           setAssignDialogOpen(true);
                                         }}
                                       >
-                                        Assign Task
+                                        Assign Taskdd
                                       </button>
 
                                       {/* ✅ Destructive action - Red color */}

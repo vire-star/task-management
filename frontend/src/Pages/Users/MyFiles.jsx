@@ -1,5 +1,6 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useGetPrivateFileHook } from '@/hooks/file.hook'
+import { useCreateFileHookk, useGetPrivateFileHook } from '@/hooks/file.hook'
 import { 
   Trash2, 
   MoreVertical, 
@@ -10,14 +11,18 @@ import {
   Search,
   Filter
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 const MyFiles = () => {
+    const {mutate, isPending} = useCreateFileHookk()
+    const [openDialog, setOpenDialog] = useState(false)
   const { data, isLoading } = useGetPrivateFileHook()
   const [deletePopoverId, setDeletePopoverId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
 
+  const {register, handleSubmit} = useForm()
   const handleDeleteFile = (fileId, fileName) => {
     // Your delete mutation here
     toast.success(`${fileName} deleted successfully`)
@@ -39,10 +44,25 @@ const MyFiles = () => {
     if (['zip', 'rar'].includes(ext)) return '📦'
     return '📁'
   }
+const filteredFiles = useMemo(() => {
+  if (!searchQuery) return data;
 
-  const filteredFiles = data?.filter(file => 
-    file.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const query = searchQuery.toLowerCase();
+
+  return data?.filter(file => {
+    const name = file.name?.toLowerCase() || "";
+    const ext = name.split(".").pop();
+    const sizeMB = file.size / (1024 * 1024);
+
+    return (
+      name.includes(query) ||
+      ext?.includes(query) ||
+      (query === "large" && sizeMB > 5) ||
+      (query === "small" && sizeMB < 1)
+    );
+  });
+}, [data, searchQuery]);
+
 
   if (isLoading) {
     return (
@@ -55,6 +75,27 @@ const MyFiles = () => {
     )
   }
 
+
+
+  
+  const fileHandler=(data)=>{
+    const formdata = new FormData()
+
+   if (data.url && data.url[0]) {
+      formdata.append('url', data.url[0]);
+    }
+
+    formdata.append("visibility", "private")
+
+    mutate(formdata,
+      {
+        onSuccess:()=>{
+          setOpenDialog(false)
+        }
+      }
+    )
+  }
+  
   return (
     <div className="h-screen w-full bg-slate-50 p-9 overflow-y-auto">
       <div className="max-w-7xl mx-auto">
@@ -68,10 +109,84 @@ const MyFiles = () => {
               </p>
             </div>
 
-            <button className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-all shadow-sm flex items-center gap-2">
-              <span>Add File</span>
-              <span className="text-lg">+</span>
-            </button>
+            
+
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+  <DialogTrigger asChild>
+    <button
+      className="
+        px-6 py-2.5 
+        bg-slate-900 hover:bg-slate-800 
+        text-white text-sm font-semibold
+        rounded-lg 
+        transition-all 
+        shadow-sm 
+        flex items-center gap-2
+      "
+    >
+      <span>Add File</span>
+      <span className="text-lg leading-none">+</span>
+    </button>
+  </DialogTrigger>
+
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader className="space-y-1">
+      <DialogTitle className="text-xl font-semibold text-slate-900">
+        Add New File
+      </DialogTitle>
+      <DialogDescription className="text-sm text-slate-600">
+        Upload a file to your workspace
+      </DialogDescription>
+    </DialogHeader>
+
+    {/* Body */}
+    <form
+      onSubmit={handleSubmit(fileHandler)}
+      className="mt-6 space-y-5"
+    >
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-slate-700">
+          File
+        </label>
+
+        <input
+          type="file"
+          {...register("url")}
+          className="
+            block w-full text-sm text-slate-600
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-slate-100 file:text-slate-700
+            hover:file:bg-slate-200
+            border border-slate-200 rounded-md
+            cursor-pointer
+          "
+        />
+      </div>
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="
+            px-5 py-2
+            text-sm font-semibold
+            text-white
+            bg-slate-900 hover:bg-slate-800
+            disabled:opacity-60 disabled:cursor-not-allowed
+            rounded-md
+            transition-all
+          "
+        >
+          {isPending ? "Uploading..." : "Upload File"}
+        </button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
+
+
           </div>
 
           {/* Search Bar */}

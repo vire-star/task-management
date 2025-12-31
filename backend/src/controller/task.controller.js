@@ -15,6 +15,11 @@ export const createTask=async(req , res)=>{
             })
         }
         
+        if(!workshopId){
+          return res.status(401).json({
+            message:"First create a workshop"
+          })
+        }
         const workshop = await Workshop.findById(workshopId)
 
         if(!workshop){
@@ -161,6 +166,11 @@ export const assignUserToTask = async (req, res) => {
     const taskId  = req.params.id;
   const { userId } = req.body;
   const currentUserId = req.id;
+
+   console.log("=== ASSIGNMENT REQUEST ===");
+    console.log("Task ID:", taskId);
+    console.log("User ID to assign:", userId);
+    console.log("User ID type:", typeof userId);
 
   const task = await Task.findById(taskId);
   if (!task) return res.status(404).json({ message: "Task not found" });
