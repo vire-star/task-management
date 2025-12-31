@@ -105,3 +105,15 @@ export const inviteMemberToWorkshopApi = async ({ workshopId, email, role }) => 
 
 // getInvitedWorkshop
 
+
+export const createWorkshopApi = async(payload)=>{
+    const res = await axios.post(`${BaseUrl}/workshop/createWorkshop`,
+        payload,
+        {
+            headers: { 'Content-Type': 'application/json' },
+      withCredentials: true
+        }
+    )
+
+    return res.data
+}

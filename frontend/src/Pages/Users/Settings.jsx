@@ -1,4 +1,5 @@
 import {
+  useCreateWorkshopHook,
   useDeleteWorkshop,
   useGetInvitedWorkshopHook,
   useGetMyWorkshopHook,
@@ -31,12 +32,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import InviteMemberToWorkshop from "@/components/InviteMemberToWorkshop";
+import { useForm } from "react-hook-form";
+import { useUpdateProfileHook } from "@/hooks/userHooks";
 
 const Settings = () => {
   const user = userStore((state) => state.user);
+  const {register, handleSubmit, reset} = useForm()
   const { data } = useGetMyWorkshopHook();
+  const [openDialogue, setopenDialogue] = useState(false)
+  const [openPorfileDialogue, setopenProfileDialogue] = useState(false)
 
   const [activeWorkshopId, setActiveWorkshopId] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -118,6 +125,38 @@ const Settings = () => {
     );
   };
 
+
+  const {mutate} = useCreateWorkshopHook()
+
+  const createWorkshopHandler=(data)=>{
+    mutate(data,{
+      onSuccess:()=>{
+        setopenDialogue(false),
+        reset()
+      }
+    })
+  }
+
+  const {mutate:updateProfile, isPending} = useUpdateProfileHook()
+  const updateProfileHandler=(data)=>{
+    const formdata = new FormData()
+
+    if(data.name){
+      formdata.append('name',data.name)
+    }
+    if(data.avatarUrl){
+      formdata.append('avatarUrl', data.avatarUrl[0])
+    }
+
+    updateProfile(formdata,{
+      onSuccess:()=>{
+        setopenProfileDialogue(false)
+        reset()
+      }
+    })
+
+
+  }
   return (
     <div className="min-h-screen w-full bg-slate-50 px-9 pt-9 pb-16 overflow-y-auto">
       {/* Profile Header */}
@@ -131,7 +170,11 @@ const Settings = () => {
                 alt={user?.name}
               />
               <button className="absolute bottom-0 right-0 w-8 h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-full flex items-center justify-center shadow-lg transition-colors duration-200">
-                <Pencil className="w-4 h-4" />
+                <Pencil onClick={(e)=>{
+                  e.preventDefault()
+                  setopenProfileDialogue(true)
+
+                }} className="w-4 h-4" />
               </button>
             </div>
             <div>
@@ -384,7 +427,10 @@ const Settings = () => {
               <p className="text-slate-500 text-lg">
                 No workspaces created yet
               </p>
-              <button className="mt-4 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors duration-200">
+              <button onClick={(e)=>{
+                e.stopPropagation()
+                setopenDialogue(true)
+              }} className="mt-4 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors duration-200">
                 Create Workspace
               </button>
             </div>
@@ -522,6 +568,176 @@ const Settings = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+
+      <Dialog open={openDialogue} onOpenChange={setopenDialogue}>
+  <DialogContent className="sm:max-w-[500px]">
+    <DialogHeader>
+      <DialogTitle className="text-2xl font-bold text-slate-900">
+        Create New Workspace
+      </DialogTitle>
+      <DialogDescription className="text-slate-600">
+        Set up a new workspace to collaborate with your team
+      </DialogDescription>
+    </DialogHeader>
+
+    <form 
+      onSubmit={handleSubmit(createWorkshopHandler)} 
+      className="space-y-5 mt-4"
+    >
+      {/* Name Field */}
+      <div className="space-y-2">
+        <label 
+          htmlFor="name" 
+          className="block text-sm font-semibold text-slate-700"
+        >
+          Workspace Name <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          placeholder="e.g., Marketing Team, Development Project"
+          {...register('name', { 
+            required: 'Workspace name is required',
+            minLength: { 
+              value: 3, 
+              message: 'Name must be at least 3 characters' 
+            },
+            maxLength: {
+              value: 50,
+              message: 'Name cannot exceed 50 characters'
+            }
+          })}
+          className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg 
+                     bg-white placeholder:text-slate-400 text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent
+                     hover:border-slate-400 transition-all duration-200
+                     disabled:bg-slate-50 disabled:cursor-not-allowed"
+        />
+        
+      </div>
+
+      {/* Description Field */}
+      <div className="space-y-2">
+        <label 
+          htmlFor="description" 
+          className="block text-sm font-semibold text-slate-700"
+        >
+          Description 
+        </label>
+        <textarea
+          id="description"
+          placeholder="What's this workspace for? Add a brief description..."
+          rows={4}
+          {...register('description', {
+            maxLength: {
+              value: 200,
+              message: 'Description cannot exceed 200 characters'
+            }
+          })}
+          className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg 
+                     bg-white placeholder:text-slate-400 text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent
+                     hover:border-slate-400 transition-all duration-200
+                     resize-none disabled:bg-slate-50 disabled:cursor-not-allowed"
+        />
+        
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          onClick={() => {
+            setopenDialogue(false)
+            reset()
+          }}
+          className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold 
+                     rounded-lg hover:bg-slate-50 transition-colors duration-200
+                     focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold 
+                     rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md
+                     focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-800"
+        >
+          Create Workspace
+        </button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
+
+<Dialog open={openPorfileDialogue} onOpenChange={setopenProfileDialogue}>
+  
+  {/* Trigger */}
+  
+
+  {/* Content */}
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Edit Profile</DialogTitle>
+      <DialogDescription>
+        Update your name and profile picture.
+      </DialogDescription>
+    </DialogHeader>
+
+    <form
+      onSubmit={handleSubmit(updateProfileHandler)}
+      className="space-y-4 mt-4"
+    >
+      {/* Name */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">
+          Name
+        </label>
+        <input
+          type="text"
+          {...register('name')}
+          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+          placeholder="Enter your name"
+        />
+      </div>
+
+      {/* Avatar */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">
+          Profile Picture
+        </label>
+        <input
+          type="file"
+          {...register('avatarUrl')}
+          className="w-full text-sm file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => setopenProfileDialogue(false)}
+          className="px-4 py-2 text-sm border rounded-md hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-md hover:bg-slate-800 disabled:opacity-60"
+        >
+          {isPending ? "Updating..." : "Update"}
+        </button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
+
+      
     </div>
   );
 };

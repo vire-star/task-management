@@ -1,4 +1,4 @@
-import { acceptInvitationApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, inviteMemberToWorkshopApi, leaveWorkshopApi, removeUserfromWorkshopApi } from '@/Api/workshop.api'
+import { acceptInvitationApi, createWorkshopApi, deleteWorkshop, getInvitedWorkshopApi, getMyWorkShopApi, getTotalMemberInWorkshopApi, inviteMemberToWorkshopApi, leaveWorkshopApi, removeUserfromWorkshopApi } from '@/Api/workshop.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -119,3 +119,21 @@ export const useInviteMemberToWorkshopHook = () => {
 }
 
 
+
+
+
+
+export const useCreateWorkshopHook=()=>{
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn:createWorkshopApi,
+        onSuccess:(data)=>{
+            console.log(data)
+            toast.success(data.message)
+            queryClient.invalidateQueries(['getMyWorkshop'])
+        },
+        onError:(err)=>{
+            toast.error(err.response.data.message)
+        }
+    })
+}

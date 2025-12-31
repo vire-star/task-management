@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLogoutHook } from "@/hooks/userHooks";
-import { useGetInvitedWorkshopHook, useGetMyWorkshopHook } from "@/hooks/workshopHook";
+import { useCreateWorkshopHook, useGetInvitedWorkshopHook, useGetMyWorkshopHook } from "@/hooks/workshopHook";
 import { workshopStore } from "@/store/workshopStore";
 
 import {
@@ -187,11 +187,23 @@ import { userStore } from "@/store/userStore";
 
 // import React, { useState } from "react";
 import { Menu, X } from "lucide-react"; // Hamburger icon
+import { useForm } from "react-hook-form";
 
 const Sidebar = () => {
   const  clearWorkshop = workshopStore((state)=>state.clearWorkshop)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDialogue, setopenDialogue] = useState(false)
+   const {register, handleSubmit, reset} = useForm()
+    const {mutate:createworshop} = useCreateWorkshopHook()
   
+    const createWorkshopHandler=(data)=>{
+      createworshop(data,{
+        onSuccess:()=>{
+          setopenDialogue(false),
+          reset()
+        }
+      })
+    }
   const { mutate } = useLogoutHook();
   const { data, isSuccess } = useGetMyWorkshopHook();
   const { data: invitedWorkshop } = useGetInvitedWorkshopHook();
@@ -208,10 +220,12 @@ const Sidebar = () => {
     });
   } 
   
+  
   const workshopHandler = (item) => {
     setWorkshop(item);
     setIsMobileMenuOpen(false); // ✅ Mobile menu close karo
   };
+  
 
   // ✅ Sidebar content ko reusable banao
   const sidebarContent = (
@@ -270,25 +284,110 @@ const Sidebar = () => {
                 <p className="text-xs font-medium text-slate-400 uppercase">
                   My workshops
                 </p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                      className="text-[11px] px-2 py-1 h-7 bg-purple-600 hover:bg-purple-500 text-white"
-                    >
-                      + Create
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Create a new workshop</DialogTitle>
-                      <DialogDescription>
-                        Define a name and basic details for your new workshop.
-                      </DialogDescription>
-                    </DialogHeader>
-                  </DialogContent>
-                </Dialog>
+                   <Dialog open={openDialogue} onOpenChange={setopenDialogue}>
+                    <DialogTrigger className="p-2 bg-purple-900 rounded-md flex items-center justify-center cursor-pointer">
+                     <h1 className="text-slate-200 text-xs tracking-tight">Create +</h1>
+                    </DialogTrigger>
+                 <DialogContent className="sm:max-w-[500px]">
+                   <DialogHeader>
+                     <DialogTitle className="text-2xl font-bold text-slate-900">
+                       Create New Workspace
+                     </DialogTitle>
+                     <DialogDescription className="text-slate-600">
+                       Set up a new workspace to collaborate with your team
+                     </DialogDescription>
+                   </DialogHeader>
+               
+                   <form 
+                     onSubmit={handleSubmit(createWorkshopHandler)} 
+                     className="space-y-5 mt-4"
+                   >
+                     {/* Name Field */}
+                     <div className="space-y-2">
+                       <label 
+                         htmlFor="name" 
+                         className="block text-sm font-semibold text-slate-700"
+                       >
+                         Workspace Name <span className="text-red-500">*</span>
+                       </label>
+                       <input
+                         id="name"
+                         type="text"
+                         placeholder="e.g., Marketing Team, Development Project"
+                         {...register('name', { 
+                           required: 'Workspace name is required',
+                           minLength: { 
+                             value: 3, 
+                             message: 'Name must be at least 3 characters' 
+                           },
+                           maxLength: {
+                             value: 50,
+                             message: 'Name cannot exceed 50 characters'
+                           }
+                         })}
+                         className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg 
+                                    bg-white placeholder:text-slate-400 text-slate-900
+                                    focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent
+                                    hover:border-slate-400 transition-all duration-200
+                                    disabled:bg-slate-50 disabled:cursor-not-allowed"
+                       />
+                       
+                     </div>
+               
+                     {/* Description Field */}
+                     <div className="space-y-2">
+                       <label 
+                         htmlFor="description" 
+                         className="block text-sm font-semibold text-slate-700"
+                       >
+                         Description 
+                       </label>
+                       <textarea
+                         id="description"
+                         placeholder="What's this workspace for? Add a brief description..."
+                         rows={4}
+                         {...register('description', {
+                           maxLength: {
+                             value: 200,
+                             message: 'Description cannot exceed 200 characters'
+                           }
+                         })}
+                         className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg 
+                                    bg-white placeholder:text-slate-400 text-slate-900
+                                    focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent
+                                    hover:border-slate-400 transition-all duration-200
+                                    resize-none disabled:bg-slate-50 disabled:cursor-not-allowed"
+                       />
+                       
+                     </div>
+               
+                     {/* Action Buttons */}
+                     <div className="flex gap-3 pt-4 border-t border-slate-200">
+                       <button
+                         type="button"
+                         onClick={() => {
+                           setopenDialogue(false)
+                           reset()
+                         }}
+                         className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold 
+                                    rounded-lg hover:bg-slate-50 transition-colors duration-200
+                                    focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                       >
+                         Cancel
+                       </button>
+                       <button
+                         type="submit"
+                         className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold 
+                                    rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md
+                                    focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
+                                    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-800"
+                       >
+                         Create Workspace
+                       </button>
+                     </div>
+                   </form>
+                 </DialogContent>
+               </Dialog>
               </div>
 
               <div className="max-h-56 space-y-1 overflow-y-auto pr-1">

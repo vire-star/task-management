@@ -41,3 +41,17 @@ export const getUserApi = async()=>{
     )
     return res.data
 }
+
+export const updateProfile =async(payload)=>{
+    const res  = await axios.post(`${BaseUrl}/updateProfile`,
+        payload,
+        
+            {
+            headers:{ 'Content-Type': 'multipart/form-data' },
+            withCredentials:true
+        
+        }
+    )
+
+    return res.data
+}

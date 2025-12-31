@@ -10,7 +10,7 @@ userRoute.post('/register', registerUser)
 userRoute.post('/login', Login)
 userRoute.get('/getUser',authMiddleware, getUser)
 userRoute.post('/logout',authMiddleware, logout)
-userRoute.post('/updateProfile', authMiddleware, upload.single('s'), updateProfile)
+userRoute.post('/updateProfile', authMiddleware, upload.single('avatarUrl'), updateProfile)
 
 
 export default userRoute
