@@ -33,11 +33,13 @@ export const useLoginHook = ()=>{
 }
 
 export const useLogoutHook = ()=>{
+    const queryClient = useQueryClient()
     const navigate = useNavigate()
     return useMutation({
         mutationFn:logoutApi,
         onSuccess:(data)=>{
             toast.success(data.message)
+            queryClient.invalidateQueries(['getUser'])
             navigate ('/')
         },
         onError:(err)=>{
