@@ -82,7 +82,7 @@ export const registerUser = async(req, res) => {
     // ✅ Consistent response structure
     return res.status(200)
       .cookie("token", token, { 
-        maxAge: 1 * 24 * 60 * 60 * 1000, 
+        maxAge: 20 * 24 * 60 * 60 * 1000, 
         httpOnly: true, 
         secure: true, 
         sameSite: "none"
@@ -140,7 +140,7 @@ export const Login = async(req, res)=>{
         const token = await jwt.sign({userId : user._id},ENV.JWT_SECRET)
 
 
-           return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: "none",  }).json({
+           return res.status(200).cookie("token", token, { maxAge: 20 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: "none",  }).json({
             message: `Welcome  ${user.name}`,
             
             success: true
