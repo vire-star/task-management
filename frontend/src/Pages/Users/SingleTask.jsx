@@ -13,6 +13,7 @@ const SingleTask = () => {
   const [openDialog, setopenDialog] = useState(false)
   const commentsEndRef = useRef(null)
   const [commentText, setCommentText] = useState('')
+  console.log(commentText)
   const [showMentions, setShowMentions] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
   const [mentionedUsers, setMentionedUsers] = useState([])
@@ -25,6 +26,7 @@ const SingleTask = () => {
   const { reset, handleSubmit, register } = useForm()
   const { data: speceficFile } = useGetSpeceficFile(id)
   const { data: allComment } = useGetAllCommentHook(id)
+  console.log(allComment)
   const { mutate } = useAddCommentHook(id)
   const { data: totalAssigne } = useGetAllAssigneHook(id)
 
@@ -69,7 +71,8 @@ const SingleTask = () => {
     }
   }, [allComment?.length])
 
-  const addCommentHandler = () => {
+  const addCommentHandler = (e) => {
+    e.preventDefault()
     mutate({
       id,
       payload: {
@@ -77,7 +80,12 @@ const SingleTask = () => {
         mentionedUserIds: mentionedUsers
       }
     })
-    reset()
+    console.log( id,
+       {
+        text: commentText,
+        mentionedUserIds: mentionedUsers
+      })
+    // reset()
     setCommentText('')
     setMentionedUsers([])
     setShowMentions(false)
@@ -424,13 +432,14 @@ const SingleTask = () => {
 
           {/* Comment Input */}
           <div className="p-2 sm:p-3 lg:p-4 border-t border-slate-700 relative">
-            <form onSubmit={handleSubmit(addCommentHandler)}>
+            <form onSubmit={addCommentHandler}>
               <textarea
                 value={commentText}
                 onChange={(e) => {
                   setCommentText(e.target.value)
                   handleCommentChange(e)
                 }}
+                
                 placeholder="Add a comment... @ to mention"
                 className="w-full px-2.5 sm:px-3 lg:px-4 py-2 sm:py-2.5 lg:py-3 bg-slate-800 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-600"
                 rows={3}
