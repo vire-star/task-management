@@ -9,7 +9,7 @@ const InviteMemberToWorkshop = ({ item }) => {
   
   const [isOpen, setIsOpen] = useState(false)
   
-  const { mutate: inviteMember, isLoading } = useInviteMemberToWorkshopHook()
+  const { mutate: inviteMember, isLoading, isPending } = useInviteMemberToWorkshopHook()
 
   const handleInvite = (e) => {
     e.preventDefault()
@@ -59,7 +59,7 @@ const InviteMemberToWorkshop = ({ item }) => {
         <form onSubmit={handleInvite} className="space-y-3">
           <div>
             <h4 className="font-bold text-slate-900 mb-1">
-              Invite Team Member
+             Invite Member to Workshop
             </h4>
             <p className="text-xs text-slate-500">
               Send an invitation to join <strong>{item.name}</strong>
@@ -84,7 +84,7 @@ const InviteMemberToWorkshop = ({ item }) => {
           {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Role
+              Role:Member
             </label>
           
           </div>
@@ -106,7 +106,7 @@ const InviteMemberToWorkshop = ({ item }) => {
               disabled={isLoading}
               className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Sending...' : 'Send Invite'}
+              {isPending ? 'Sending...' : 'Send Invite'}
             </button>
           </div>
         </form>

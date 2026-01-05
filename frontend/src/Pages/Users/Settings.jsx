@@ -41,6 +41,11 @@ import { useUpdateProfileHook } from "@/hooks/userHooks";
 const Settings = () => {
   const user = userStore((state) => state.user);
   const {register, handleSubmit, reset} = useForm()
+  const {
+  register: profileRegister,
+  handleSubmit: handleProfileSubmit,
+  reset: resetProfile
+} = useForm()
   const { data } = useGetMyWorkshopHook();
   const [openDialogue, setopenDialogue] = useState(false)
   const [openPorfileDialogue, setopenProfileDialogue] = useState(false)
@@ -144,14 +149,16 @@ const Settings = () => {
     if(data.name){
       formdata.append('name',data.name)
     }
-    if(data.avatarUrl){
-      formdata.append('avatarUrl', data.avatarUrl[0])
-    }
+   if (data.avatarUrl?.[0] instanceof File) {
+  formdata.append('avatarUrl', data.avatarUrl[0]);
+}
+
 
     updateProfile(formdata,{
       onSuccess:()=>{
         setopenProfileDialogue(false)
-        reset()
+        // reset()
+        resetProfile()
       }
     })
 
@@ -687,7 +694,7 @@ const Settings = () => {
     </DialogHeader>
 
     <form
-      onSubmit={handleSubmit(updateProfileHandler)}
+      onSubmit={handleProfileSubmit(updateProfileHandler)}
       className="space-y-4 mt-4"
     >
       {/* Name */}
@@ -697,7 +704,7 @@ const Settings = () => {
         </label>
         <input
           type="text"
-          {...register('name')}
+          {...profileRegister('name')}
           className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
           placeholder="Enter your name"
         />
@@ -710,7 +717,7 @@ const Settings = () => {
         </label>
         <input
           type="file"
-          {...register('avatarUrl')}
+          {...profileRegister('avatarUrl')}
           className="w-full text-sm file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
         />
       </div>
