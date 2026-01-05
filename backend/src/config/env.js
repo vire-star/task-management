@@ -9,5 +9,6 @@ export const ENV={
     URL_ENDPOINT:process.env.URL_ENDPOINT,
     BREVO_SMTP_KEY:process.env.BREVO_SMTP_KEY,
     BREVO_EMAIL:process.env.BREVO_EMAIL,
-    CLIENT_URL:process.env.CLIENT_URL
+    CLIENT_URL:process.env.CLIENT_URL,
+    BREVO_API_KEY:process.env.BREVO_API_KEY
 }
