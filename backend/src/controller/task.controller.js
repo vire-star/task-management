@@ -3,45 +3,45 @@ import { User } from "../models/user.model.js";
 import { Workshop } from "../models/workshop.model.js";
 import { WorkshopMember } from "../models/workshopMember.model.js";
 
-export const createTask=async(req , res)=>{
-    try {
-        const  workshopId = req.params.id;
-        const creatorId = req.id;
-        const {title,description} = req.body;
+// export const createTask=async(req , res)=>{
+//     try {
+//         const  workshopId = req.params.id;
+//         const creatorId = req.id;
+//         const {title,description} = req.body;
 
-        if(!title || !description){
-            return res.status(401).json({
-                message:"Please provide all the details"
-            })
-        }
+//         if(!title || !description){
+//             return res.status(401).json({
+//                 message:"Please provide all the details"
+//             })
+//         }
         
-        if(!workshopId){
-          return res.status(401).json({
-            message:"First create a workshop"
-          })
-        }
-        const workshop = await Workshop.findById(workshopId)
+//         if(!workshopId){
+//           return res.status(401).json({
+//             message:"First create a workshop"
+//           })
+//         }
+//         const workshop = await Workshop.findById(workshopId)
 
-        if(!workshop){
-            return res.status(401).json({
-                message:"Workshop not found"
-            })
-        }
+//         if(!workshop){
+//             return res.status(401).json({
+//                 message:"Workshop not found"
+//             })
+//         }
 
-        const task = await Task.create({
-            title,
-            description,
-            workshopId,
-            creatorId
-        })
+//         const task = await Task.create({
+//             title,
+//             description,
+//             workshopId,
+//             creatorId
+//         })
 
-        return res.status(201).json({
-            message:"Task created"
-        })
-    } catch (error) {
-        console.log(`error from create task, ${error}`)
-    }
-}
+//         return res.status(201).json({
+//             message:"Task created"
+//         })
+//     } catch (error) {
+//         console.log(`error from create task, ${error}`)
+//     }
+// }
 
 
 export const getAllTask = async(req,res)=>{
@@ -99,67 +99,158 @@ export const getSingleTask = async(req,res)=>{
     
 }
 
-export const deleteTask = async (req, res) => {
-    try {
-        const taskId = req.params.id;
+// export const deleteTask = async (req, res) => {
+//     try {
+//         const taskId = req.params.id;
 
-        const task = await Task.findByIdAndDelete(taskId);
+//         const task = await Task.findByIdAndDelete(taskId);
 
-        if (!task) {
-            return res.status(404).json({
-                message: "Task not found"
-            });
-        }
+//         if (!task) {
+//             return res.status(404).json({
+//                 message: "Task not found"
+//             });
+//         }
 
-        return res.status(200).json({
-            message: "Task deleted successfully"
-        });
+//         return res.status(200).json({
+//             message: "Task deleted successfully"
+//         });
 
-    } catch (error) {
-        console.log(`error from delete task, ${error}`);
-        return res.status(500).json({
-            message: "Server error"
-        });
+//     } catch (error) {
+//         console.log(`error from delete task, ${error}`);
+//         return res.status(500).json({
+//             message: "Server error"
+//         });
+//     }
+// };
+
+
+
+// task.controller.js - Update changeStatus function
+
+export const changeStatus = async(req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { status } = req.body;
+    
+    const allowedStatus = ["todo", "in-progress", "done"];
+    
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({
+        message: "Invalid status value",
+      });
     }
+
+    const task = await Task.findByIdAndUpdate(
+      taskId, 
+      { status }, 
+      { new: true } // ✅ Return updated document
+    ).populate('assignees', 'name email avatarUrl')
+     .populate('creatorId', 'name email');
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found"
+      });
+    }
+
+    // ✅ Get Socket.io instance and emit to workshop room
+    const io = req.app.get('io');
+    io.to(`workshop:${task.workshopId}`).emit('taskUpdated', {
+      taskId: task._id,
+      status: task.status,
+      task: task // Send full task data
+    });
+
+    return res.status(200).json({
+      message: "Task status changed",
+      task
+    });
+  } catch (error) {
+    console.log(`error from change status, ${error}`);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
+// ✅ Also update createTask to emit event
+export const createTask = async(req, res) => {
+  try {
+    const workshopId = req.params.id;
+    const creatorId = req.id;
+    const { title, description } = req.body;
 
-
-export const changeStatus = async(req, res)=>{
-    try {
-        const taskId = req.params.id;
-        const {status} = req.body;
-
-        const creatorId = req.id
-
-        
-        const allowedStatus = ["todo", "in-progress", "done"];
-
-if (!allowedStatus.includes(status)) {
-  return res.status(400).json({
-    message: "Invalid status value",
-  });
-}
-        const task = await Task.findByIdAndUpdate(taskId,{
-            status
-        })
-
-        console.log(task)
-        if(!task){
-            return res.status(401).json({
-                message:"Task not found"
-            })
-        }
-        
-
-        return res.status(201).json({
-            message:"Task status changed"
-        })
-    } catch (error) {
-        console.log(`error from change status, ${error}`)
+    if (!title || !description) {
+      return res.status(400).json({
+        message: "Please provide all the details"
+      });
     }
-}
+    
+    if (!workshopId) {
+      return res.status(400).json({
+        message: "First create a workshop"
+      });
+    }
 
+    const workshop = await Workshop.findById(workshopId);
+    if (!workshop) {
+      return res.status(400).json({
+        message: "Workshop not found"
+      });
+    }
+
+    const task = await Task.create({
+      title,
+      description,
+      workshopId,
+      creatorId
+    });
+
+    // ✅ Populate and emit
+    const populatedTask = await Task.findById(task._id)
+      .populate('creatorId', 'name email avatarUrl')
+      .populate('assignees', 'name email avatarUrl');
+
+    const io = req.app.get('io');
+    io.to(`workshop:${workshopId}`).emit('taskCreated', populatedTask);
+
+    return res.status(201).json({
+      message: "Task created",
+      task: populatedTask
+    });
+  } catch (error) {
+    console.log(`error from create task, ${error}`);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ✅ Update deleteTask to emit event
+export const deleteTask = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found"
+      });
+    }
+
+    const workshopId = task.workshopId;
+    await Task.findByIdAndDelete(taskId);
+
+    // ✅ Emit delete event
+    const io = req.app.get('io');
+    io.to(`workshop:${workshopId}`).emit('taskDeleted', { taskId });
+
+    return res.status(200).json({
+      message: "Task deleted successfully"
+    });
+  } catch (error) {
+    console.log(`error from delete task, ${error}`);
+    return res.status(500).json({
+      message: "Server error"
+    });
+  }
+};
 
 export const assignUserToTask = async (req, res) => {
   try {

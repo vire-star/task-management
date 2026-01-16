@@ -54,10 +54,10 @@ const HomePage = () => {
       <section className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 pt-20 pb-24'>
         <div className='text-center space-y-8'>
           {/* Badge */}
-          <div className='inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full border border-slate-200'>
+          {/* <div className='inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full border border-slate-200'>
             <span className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></span>
             <span className='text-sm font-medium text-slate-700'>Now with AI-powered automation</span>
-          </div>
+          </div> */}
 
           {/* Main Heading */}
           <h1 className='text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 leading-tight'>
